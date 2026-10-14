@@ -1,0 +1,94 @@
+day,id,start,end,kind,title,note,tracked
+mon,mon-0730-rise,07:30,08:00,routine,"Подъём, зарядка, гигиена",,no
+mon,mon-0800-breakfast,08:00,08:30,routine,Завтрак,,no
+mon,mon-0830-day-plan,08:30,09:00,routine,"План на день, проверка заданий",,no
+mon,mon-0900-math,09:00,10:30,study,Математика,алгебра / геометрия,yes
+mon,mon-1030-break,10:30,10:45,break,Перерыв,,no
+mon,mon-1045-online-english,10:45,12:15,study,Онлайн-уроки / английский,,yes
+mon,mon-1215-lunch,12:15,13:00,rest,Обед,отдых без гаджетов,no
+mon,mon-1300-math-practice,13:00,14:30,study,Практика по математике,задачи,yes
+mon,mon-1430-walk-sport,14:30,15:30,sport,Прогулка / спорт,,yes
+mon,mon-1530-homework,15:30,17:00,study,Домашние задания,,yes
+mon,mon-1700-tutor-section,17:00,18:30,study,Репетитор / секция,,yes
+mon,mon-1830-dinner-free,18:30,19:30,rest,"Ужин, свободное время",,no
+mon,mon-1930-review-hard,19:30,21:00,study,Повторение сложных тем,,yes
+mon,mon-2100-hygiene-reading,21:00,22:00,routine,"Гигиена, чтение",ограничение гаджетов,no
+mon,mon-2200-sleep,22:00,22:30,sleep,Сон,,no
+tue,tue-0730-rise,07:30,08:00,routine,"Подъём, зарядка, гигиена",,no
+tue,tue-0800-breakfast,08:00,08:30,routine,Завтрак,,no
+tue,tue-0830-day-plan,08:30,09:00,routine,"План на день, проверка заданий",,no
+tue,tue-0900-russian,09:00,10:30,study,Русский язык / литература,,yes
+tue,tue-1030-break,10:30,10:45,break,Перерыв,,no
+tue,tue-1045-online-biology,10:45,12:15,study,Онлайн-уроки / биология,,yes
+tue,tue-1215-lunch,12:15,13:00,rest,Обед,,no
+tue,tue-1300-english-essay,13:00,14:30,study,"Английский, эссе",,yes
+tue,tue-1430-walk-sport,14:30,15:30,sport,Прогулка / спорт,,yes
+tue,tue-1530-homework,15:30,17:00,study,Домашние задания,,yes
+tue,tue-1700-club-section,17:00,18:30,study,Кружок / секция,,yes
+tue,tue-1830-dinner-free,18:30,19:30,rest,"Ужин, свободное время",,no
+tue,tue-1930-reading-project,19:30,21:00,study,Чтение / проект,,yes
+tue,tue-2100-hygiene-rest,21:00,22:00,routine,"Гигиена, отдых",,no
+tue,tue-2200-sleep,22:00,22:30,sleep,Сон,,no
+wed,wed-0730-rise,07:30,08:00,routine,"Подъём, зарядка, гигиена",,no
+wed,wed-0800-breakfast,08:00,08:30,routine,Завтрак,,no
+wed,wed-0830-day-plan,08:30,09:00,routine,"План на день, проверка заданий",,no
+wed,wed-0900-physics-chemistry,09:00,10:30,study,Физика / химия,,yes
+wed,wed-1030-break,10:30,10:45,break,Перерыв,,no
+wed,wed-1045-online-history,10:45,12:15,study,Онлайн-уроки / история,,yes
+wed,wed-1215-lunch,12:15,13:00,rest,Обед,,no
+wed,wed-1300-lab-projects,13:00,14:30,study,Лабораторные / проекты,,yes
+wed,wed-1430-walk-sport,14:30,15:30,sport,Прогулка / спорт,,yes
+wed,wed-1530-homework,15:30,17:00,study,Домашние задания,,yes
+wed,wed-1700-tutor-section,17:00,18:30,study,Репетитор / секция,,yes
+wed,wed-1830-dinner-free,18:30,19:30,rest,"Ужин, свободное время",,no
+wed,wed-1930-review-hard,19:30,21:00,study,Повторение сложных тем,,yes
+wed,wed-2100-hygiene-reading,21:00,22:00,routine,"Гигиена, чтение",,no
+wed,wed-2200-sleep,22:00,22:30,sleep,Сон,,no
+thu,thu-0730-rise,07:30,08:00,routine,"Подъём, зарядка, гигиена",,no
+thu,thu-0800-breakfast,08:00,08:30,routine,Завтрак,,no
+thu,thu-0830-day-plan,08:30,09:00,routine,"План на день, проверка заданий",,no
+thu,thu-0900-math,09:00,10:30,study,Математика,,yes
+thu,thu-1030-break,10:30,10:45,break,Перерыв,,no
+thu,thu-1045-online-chemistry,10:45,12:15,study,Онлайн-уроки / химия,,yes
+thu,thu-1215-lunch,12:15,13:00,rest,Обед,,no
+thu,thu-1300-russian-practice,13:00,14:30,study,"Практика по русскому, сочинение",,yes
+thu,thu-1430-walk-sport,14:30,15:30,sport,Прогулка / спорт,,yes
+thu,thu-1530-homework,15:30,17:00,study,Домашние задания,,yes
+thu,thu-1700-club-section,17:00,18:30,study,Кружок / секция,,yes
+thu,thu-1830-dinner-free,18:30,19:30,rest,"Ужин, свободное время",,no
+thu,thu-1930-reading-project,19:30,21:00,study,Чтение / проект,,yes
+thu,thu-2100-hygiene-rest,21:00,22:00,routine,"Гигиена, отдых",,no
+thu,thu-2200-sleep,22:00,22:30,sleep,Сон,,no
+fri,fri-0730-rise,07:30,08:00,routine,"Подъём, зарядка, гигиена",,no
+fri,fri-0800-breakfast,08:00,08:30,routine,Завтрак,,no
+fri,fri-0830-day-plan,08:30,09:00,routine,"План на день, проверка заданий",,no
+fri,fri-0900-social-history,09:00,10:30,study,Обществознание / история,,yes
+fri,fri-1030-break,10:30,10:45,break,Перерыв,,no
+fri,fri-1045-online-geography,10:45,12:15,study,Онлайн-уроки / география,,yes
+fri,fri-1215-lunch,12:15,13:00,rest,Обед,,no
+fri,fri-1300-project-informatics,13:00,14:30,study,"Проектная работа, информатика",,yes
+fri,fri-1430-walk-sport,14:30,15:30,sport,Прогулка / спорт,,yes
+fri,fri-1530-homework-errors,15:30,17:00,study,"Домашние задания, разбор ошибок",,yes
+fri,fri-1700-free-tutor,17:00,18:30,study,Свободно / репетитор,,yes
+fri,fri-1830-dinner-free,18:30,19:30,rest,"Ужин, свободное время",,no
+fri,fri-1930-light-review,19:30,21:00,study,"Лёгкое повторение, разбор недели",,yes
+fri,fri-2100-hygiene-free,21:00,22:00,routine,"Гигиена, свободное время",,no
+fri,fri-2200-sleep,22:00,22:30,sleep,Сон,,no
+sat,sat-0830-rise,08:30,09:00,routine,"Подъём, зарядка, завтрак",,no
+sat,sat-0900-free-morning,09:00,09:30,rest,Свободное утро / чтение,,no
+sat,sat-0930-week-review,09:30,11:00,study,"Разбор недели, проекты",,yes
+sat,sat-1100-break,11:00,11:15,break,Перерыв,,no
+sat,sat-1115-exam-prep,11:15,12:30,study,Подготовка к экзаменам,по необходимости,yes
+sat,sat-1230-lunch,12:30,13:00,rest,Обед,,no
+sat,sat-1300-free-hobby,13:00,14:30,rest,Свободное время / хобби,,no
+sat,sat-1430-sport-section,14:30,15:30,sport,Спорт / секция,,yes
+sat,sat-1530-friends-walk,15:30,18:30,rest,"Свободное время, друзья, прогулка",,no
+sat,sat-1830-dinner-movie,18:30,21:00,rest,"Ужин, фильм / игры / хобби",,no
+sat,sat-2100-free-time,21:00,22:30,rest,Свободное время,отбой до 23:00,no
+sun,sun-0900-rise,09:00,09:30,routine,"Подъём, завтрак",,no
+sun,sun-0930-family-rest,09:30,12:15,rest,"Отдых, прогулка, семья",,yes
+sun,sun-1215-lunch,12:15,13:00,rest,Обед,,no
+sun,sun-1300-active-hobby,13:00,15:30,sport,"Активный отдых, хобби",,yes
+sun,sun-1530-week-prep,15:30,18:30,study,Подготовка к новой неделе,"план, порядок на столе, лёгкое чтение",yes
+sun,sun-1830-family-dinner,18:30,21:00,rest,"Ужин, семья, спокойные игры",,no
+sun,sun-2100-hygiene-reading,21:00,22:30,routine,"Гигиена, чтение",отбой 22:30,no

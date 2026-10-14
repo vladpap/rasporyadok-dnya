@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Generated schedule data, rebuilt from data/schedule.csv by npm run data
+data/schedule.json
+
+# Local tool caches, kept inside the project so the file sandbox accepts them
+.npm-cache/
+.pnpm-store/
+
+# Local verification profile used to test DSH patches
+.dsh-verify/
+
+# Editor and OS noise
+.DS_Store
+*.log
+.env
+.env.local

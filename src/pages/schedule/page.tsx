@@ -1,6 +1,7 @@
 import {useMemo, useState} from 'react';
 
 import {Button} from '@astryxdesign/core/Button';
+import {Card} from '@astryxdesign/core/Card';
 import {Layout, LayoutContent, LayoutHeader, Stack} from '@astryxdesign/core/Layout';
 import {SegmentedControl, SegmentedControlItem} from '@astryxdesign/core/SegmentedControl';
 import {Heading} from '@astryxdesign/core/Text';
@@ -9,10 +10,16 @@ import {DayView} from '../../components/DayView';
 import {WeekView} from '../../components/WeekView';
 import {createMarkStore} from '../../marks';
 import {dayKeyForDate, getScheduleDay, isSameDate, minutesOfDate, startOfWeek} from '../../schedule';
+import type {ThemeMode} from '../../themeMode';
 import {useCurrentTime} from '../../useCurrentTime';
 
 /** The two views the page switches between. */
 type View = 'day' | 'week';
+
+type SchedulePageProps = {
+  mode: ThemeMode;
+  onModeChange: (mode: ThemeMode) => void;
+};
 
 /**
  * Schedule page: the current day on top, the week behind a switch.
@@ -21,9 +28,13 @@ type View = 'day' | 'week';
  * same moment: the day view greys out what already passed and the week view
  * marks today. Opening a day from the week switches back to the day view.
  *
+ * The header is an accent card, which gives the page the coloured top the design
+ * calls for without a colour override anywhere else.
+ *
+ * @param props Colour mode and its setter, owned by the app root.
  * @returns The page.
  */
-export default function SchedulePage() {
+export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
   const markStore = useMemo(() => createMarkStore(), []);
   const [view, setView] = useState<View>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -35,37 +46,46 @@ export default function SchedulePage() {
 
   return (
     <Layout height="fill">
-      <LayoutHeader padding={4} hasDivider>
-        <Stack direction="vertical" gap={3}>
-          <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
-            <Heading level={1}>Распорядок дня</Heading>
-            {!isShowingToday && (
-              <Button
-                label="К сегодняшнему дню"
-                variant="secondary"
-                onClick={() => setSelectedDate(new Date())}
-              />
-            )}
+      <LayoutHeader padding={4}>
+        <Card variant="purple" elevation="low" padding={5}>
+          <Stack direction="vertical" gap={4}>
+            <Stack direction="horizontal" gap={4} vAlign="center" wrap="wrap">
+              <Heading level={1}>Распорядок дня</Heading>
+              {!isShowingToday && (
+                <Button
+                  label="К сегодняшнему дню"
+                  variant="secondary"
+                  onClick={() => setSelectedDate(new Date())}
+                />
+              )}
+            </Stack>
+
+            <Stack direction="horizontal" gap={4} vAlign="center" wrap="wrap">
+              <SegmentedControl
+                label="Что показать"
+                value={view}
+                onChange={(nextView) => setView(nextView === 'week' ? 'week' : 'day')}
+              >
+                <SegmentedControlItem value="day" label="День" />
+                <SegmentedControlItem value="week" label="Неделя" />
+              </SegmentedControl>
+
+              <SegmentedControl
+                label="Тема оформления"
+                value={mode}
+                onChange={(nextMode) => onModeChange(nextMode === 'dark' ? 'dark' : 'light')}
+              >
+                <SegmentedControlItem value="light" label="Светлая" />
+                <SegmentedControlItem value="dark" label="Тёмная" />
+              </SegmentedControl>
+            </Stack>
           </Stack>
-          <SegmentedControl
-            label="Что показать"
-            value={view}
-            onChange={(nextView) => setView(nextView === 'week' ? 'week' : 'day')}
-          >
-            <SegmentedControlItem value="day" label="День" />
-            <SegmentedControlItem value="week" label="Неделя" />
-          </SegmentedControl>
-        </Stack>
+        </Card>
       </LayoutHeader>
 
       <LayoutContent padding={0} role="main">
         {view === 'day' ? (
-          <DayView
-            day={day}
-            date={selectedDate}
-            nowMinutes={nowMinutes}
-            store={markStore}
-          />
+          <DayView day={day} date={selectedDate} nowMinutes={nowMinutes} store={markStore} />
         ) : (
           <WeekView
             weekStart={startOfWeek(selectedDate)}

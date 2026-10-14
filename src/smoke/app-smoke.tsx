@@ -109,7 +109,8 @@ if (missingTitles.length > 0) {
 
 const cardCount = markup.split('astryx-card').length - 1;
 const clickableCount = markup.split('astryx-clickable-card').length - 1;
-if (cardCount !== dayTitles.length) {
+// The page header is a card too, so the card count is at least the segment count.
+if (cardCount < dayTitles.length) {
   problems.push(`Карточек ${cardCount}, а отрезков ${dayTitles.length}`);
 }
 if (clickableCount !== EXPECTED_TRACKED_COUNT) {
@@ -156,6 +157,34 @@ if (clickProblems.length > 0) {
 }
 
 console.log(`Нажатие карточки: отметка поставлена, прогресс 1 из ${EXPECTED_TRACKED_COUNT}, сохранено под ${SHOWN_DATE_KEY}`);
+
+// Switch the colour mode, the way a person would.
+const darkModeRadio = container.querySelector<HTMLElement>('[role="radio"][data-value="dark"]');
+if (!darkModeRadio) {
+  fail(['Не найден переключатель тёмной темы']);
+}
+
+darkModeRadio.click();
+await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
+
+const lightRadio = container.querySelector<HTMLElement>('[role="radio"][data-value="light"]');
+const modeProblems: string[] = [];
+
+if (darkModeRadio.getAttribute('aria-checked') !== 'true') {
+  modeProblems.push('После нажатия тёмная тема не выбрана');
+}
+if (lightRadio?.getAttribute('aria-checked') !== 'false') {
+  modeProblems.push('Светлая тема осталась выбранной');
+}
+if (window.localStorage.getItem('rasporyadok-dnya.theme-mode') !== 'dark') {
+  modeProblems.push('Выбор темы не сохранён в хранилище');
+}
+
+if (modeProblems.length > 0) {
+  fail(modeProblems);
+}
+
+console.log('Переключатель темы: тёмная выбрана и сохранена');
 console.log('Все проверки пройдены');
 
 // jsdom keeps timers and animation frames alive, so the process is stopped

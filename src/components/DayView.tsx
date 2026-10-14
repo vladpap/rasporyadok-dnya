@@ -1,5 +1,4 @@
 import {Badge} from '@astryxdesign/core/Badge';
-import {Grid} from '@astryxdesign/core/Grid';
 import {Stack} from '@astryxdesign/core/Layout';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
 import {Section} from '@astryxdesign/core/Section';
@@ -22,23 +21,12 @@ type DayViewProps = {
 const PROGRESS_FLOOR = 1;
 
 /**
- * Narrowest width a card may take before the grid drops a column.
- * With a maximum of three columns this yields one column on a phone, two on a
- * tablet and three on a desktop, without a width query of our own.
- */
-const CARD_MIN_WIDTH = 260;
-
-/** Most columns the grid may use on a wide screen. */
-const CARD_MAX_COLUMNS = 3;
-
-/**
  * One day of the schedule: a header with the date and the day progress, then
- * the segments as a card grid, in time order.
+ * the segments as a single column of tall cards, in time order.
  *
- * The grid decides the column count from the available width, so the same page
- * works on a phone, a tablet and a desktop. Each card carries its own state:
- * accent and a check when marked, muted when the time already passed or the
- * segment is a break, meal or sleep.
+ * One card per line keeps every title readable at any width and gives the day a
+ * steady rhythm; switching back to several columns on a wide screen is a matter
+ * of the container, not of the cards.
  *
  * @param props Day to show, the clock, and the mark storage.
  * @returns The day view.
@@ -70,7 +58,7 @@ export function DayView({day, date, nowMinutes, store}: DayViewProps) {
       </Section>
 
       <Section variant="transparent" padding={4}>
-        <Grid columns={{minWidth: CARD_MIN_WIDTH, max: CARD_MAX_COLUMNS, repeat: 'fit'}} gap={3}>
+        <Stack direction="vertical" gap={3}>
           {day.entries.map((entry) => {
             const phase = entryPhase(entry, nowMinutes);
             return (
@@ -84,7 +72,7 @@ export function DayView({day, date, nowMinutes, store}: DayViewProps) {
               />
             );
           })}
-        </Grid>
+        </Stack>
       </Section>
     </>
   );

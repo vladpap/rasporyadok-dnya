@@ -67,11 +67,12 @@ Activity kinds:
 
 | Path | Role |
 | --- | --- |
-| `src/main.tsx` | Entry point: base CSS, the theme provider, the app. |
+| `src/main.tsx` | Entry point: base CSS and the app. |
 | `src/theme.ts` | The violet theme, built by extending the shipped neutral theme. |
-| `src/App.tsx` | Application shell. |
-| `src/pages/schedule/page.tsx` | The page: selected date, clock, day and week views. |
-| `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in a responsive grid. |
+| `src/themeMode.ts` | Light or dark colour mode, remembered in local storage. |
+| `src/App.tsx` | Theme provider and application shell. |
+| `src/pages/schedule/page.tsx` | The page: accent header with the view and theme switches, selected date, clock, day and week views. |
+| `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in one column. |
 | `src/components/WeekView.tsx` | The week: one row per day with its progress, opening a day. |
 | `src/components/EntryCard.tsx` | One segment as a card, clickable when it carries a mark. |
 | `src/icons.ts` | Icon names from the data mapped to icon components. |
@@ -80,10 +81,10 @@ Activity kinds:
 | `src/useMarks.ts` | Hooks that load and update marks for a day and a week. |
 | `src/useCurrentTime.ts` | Clock that refreshes the page while it stays open. |
 
-The day view is a card grid: `Grid` picks the column count from the available
-width, so a phone gets one column, a tablet two and a desktop up to three. Each
-card carries its own state, which keeps passed time and service rows readable
-without a colour override:
+The day view is one column of tall cards, in time order, under an accent header
+card that also holds the view switch and the light/dark switch. Every card
+carries its own state, which keeps passed time and service rows readable without
+a colour override:
 
 | Card state | Look |
 | --- | --- |
@@ -111,9 +112,18 @@ returning that store from `createMarkStore()`; no view changes.
 
 The violet theme extends `@astryxdesign/theme-neutral` and re-seeds the palette
 from one accent colour, which expands into surfaces, text, borders and overlays
-for light and dark mode. Doing that at runtime makes the theme inject its styles
-on start, which the console reports once. Before a production push the theme can
-be built into static CSS instead:
+for light and dark mode. It also sets `--color-background-purple`, because the
+`purple` card variant carries both the page header and the marks that are done: a
+soft tint in light mode and a deep violet in dark mode keep the text readable in
+both, which the categorical default does not guarantee once the accent moved.
+
+The light/dark switch sets the `mode` of the theme provider, and the choice is
+remembered in local storage; before the first choice the operating system
+preference decides.
+
+Doing the palette at runtime makes the theme inject its styles on start, which
+the console reports once. Before a production push the theme can be built into
+static CSS instead:
 
 ```sh
 npx astryx theme build src/theme.ts
@@ -143,5 +153,6 @@ printed as warnings, because a gap is sometimes intended.
 browser: it mounts the app into a jsdom document with a frozen clock, checks that
 every segment of the shown day renders as a card, clicks the running card and
 verifies that the mark appears, that the day progress moves and that the mark is
-stored under that calendar day. Set `SMOKE_DUMP=/tmp/page.html` to write the
-rendered markup for inspection.
+stored under that calendar day, then switches the colour mode and verifies that
+the choice is stored. Set `SMOKE_DUMP=/tmp/page.html` to write the rendered
+markup for inspection.

@@ -60,7 +60,11 @@ export function EntryCard({entry, isDone, isRunningNow, hasPassed, onToggle}: En
   );
 
   if (!entry.tracked) {
-    return <Card variant={variant} elevation="low">{content}</Card>;
+    return (
+      <Card variant={variant} elevation="low" padding={5}>
+        {content}
+      </Card>
+    );
   }
 
   const stateText = isDone ? 'отмечено' : 'не отмечено';
@@ -70,6 +74,7 @@ export function EntryCard({entry, isDone, isRunningNow, hasPassed, onToggle}: En
       label={`${entry.title}, ${formatTimeRange(entry)}, ${stateText}`}
       variant={variant}
       elevation="low"
+      padding={5}
       onClick={() => onToggle(entry.id)}
     >
       {content}

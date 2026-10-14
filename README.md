@@ -72,19 +72,24 @@ Activity kinds:
 | `src/themeMode.ts` | Light or dark colour mode, remembered in local storage. |
 | `src/App.tsx` | Theme provider and application shell. |
 | `src/pages/schedule/page.tsx` | The page: accent header with the view and theme switches, selected date, clock, day and week views. |
-| `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in one column. |
+| `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in as many columns as the width allows. |
 | `src/components/WeekView.tsx` | The week: one row per day with its progress, opening a day. |
 | `src/components/EntryCard.tsx` | One segment as a card, clickable when it carries a mark. |
+| `src/columns.ts` | How many columns the width fits, and how segments are spread across them. |
 | `src/icons.ts` | Icon names from the data mapped to icon components. |
 | `src/schedule.ts` | Typed access to the generated data and the time rules. |
 | `src/marks.ts` | Where the done marks live. |
 | `src/useMarks.ts` | Hooks that load and update marks for a day and a week. |
 | `src/useCurrentTime.ts` | Clock that refreshes the page while it stays open. |
 
-The day view is one column of tall cards, in time order, under an accent header
-card that also holds the view switch and the light/dark switch. Every card
-carries its own state, which keeps passed time and service rows readable without
-a colour override:
+The day view is a column layout of tall cards, in time order, under an accent
+header card that also holds the view switch and the light/dark switch. The cards
+read downwards: a column is filled to its end before the next one starts, so the
+sequence follows the clock instead of jumping across rows. The width decides how
+many columns there are — one below 900px, two from there, three from 1400px —
+and the split is done by `src/columns.ts`, because `Grid` fills row by row and
+cannot express that order. Every card carries its own state, which keeps passed
+time and service rows readable without a colour override:
 
 | Card state | Look |
 | --- | --- |
@@ -112,26 +117,10 @@ returning that store from `createMarkStore()`; no view changes.
 
 The violet theme extends `@astryxdesign/theme-neutral` and re-seeds the palette
 from one accent colour, which expands into surfaces, text, borders and overlays
-for light and dark mode. It also repaints the `purple` card variant as a
-saturated accent surface:
-
-```ts
-components: {
-  card: {
-    'variant:purple': {
-      backgroundColor: 'var(--color-accent)',
-      color: 'var(--color-on-accent)',
-    },
-  },
-},
-```
-
-That variant carries both the page header and the cards that are marked done, so
-one rule gives the page its accent top and fills it in as the day progresses.
-Surface and text colour move together, which is why a marked card drops the
-secondary text colour: it would lose contrast on the accent fill. The smoke test
-checks that the theme emitted this rule, since without it the header silently
-falls back to a tint.
+for light and dark mode. The accent stays an accent: the `purple` card variant
+keeps the tinted surface the theme derives, and that one variant carries both the
+page header and the cards that are marked done, so the header and the progress
+speak the same colour without either of them being filled with it.
 
 The light/dark switch sets the `mode` of the theme provider, and the choice is
 remembered in local storage; before the first choice the operating system
@@ -167,8 +156,11 @@ printed as warnings, because a gap is sometimes intended.
 
 `npm run smoke` is the closest check to opening the page that runs without a
 browser: it mounts the app into a jsdom document with a frozen clock, checks that
-every segment of the shown day renders as a card, clicks the running card and
+every segment of the shown day renders as a card, that the columns read downwards
+with the earliest segment in the first column, clicks the running card and
 verifies that the mark appears, that the day progress moves and that the mark is
-stored under that calendar day, then switches the colour mode and verifies that
-the choice is stored. Set `SMOKE_DUMP=/tmp/page.html` to write the rendered
-markup for inspection.
+stored under that calendar day, switches the colour mode and verifies that the
+choice is stored, then renders the page at 600, 1280 and 1500 pixels wide and
+checks that it gives one, two and three columns with every segment present. Set
+`SMOKE_DUMP=/tmp/page.html` to write the rendered markup and the theme's injected
+styles for inspection.

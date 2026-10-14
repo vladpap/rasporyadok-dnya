@@ -6,6 +6,9 @@
  * the test from depending on the moment it runs: with a fixed moment the set of
  * segments that already passed is always the same.
  *
+ * Width media queries are answered from a simulated viewport width, so the test
+ * can check the same page at several widths without a browser.
+ *
  * Import this module before anything that touches the DOM.
  */
 
@@ -14,17 +17,52 @@ import {JSDOM} from 'jsdom';
 /** Moment the smoke test pretends it is, in local time. */
 const FIXED_NOW = '2026-10-14T09:30:00';
 
-const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', {
+/** Viewport width used until the test asks for another one. */
+const DEFAULT_SIMULATED_WIDTH = 1280;
+
+const dom = new JSDOM('<!doctype html><html><body></body></html>', {
   url: 'http://localhost/',
   pretendToBeVisual: true,
 });
 
 const browserWindow = dom.window as unknown as Window & typeof globalThis;
 
-/** Media query result stub, reported as "no match" for every query. */
-const matchMediaStub = (query: string): MediaQueryList =>
-  ({
-    matches: false,
+let simulatedWidth = DEFAULT_SIMULATED_WIDTH;
+
+/**
+ * Simulate a viewport width for the width media queries.
+ *
+ * @param width Viewport width in pixels.
+ */
+export function setSimulatedWidth(width: number): void {
+  simulatedWidth = width;
+}
+
+/** Width pattern inside a media query, for example `min-width: 900px`. */
+const MIN_WIDTH_PATTERN = /min-width:\s*(\d+)px/;
+const MAX_WIDTH_PATTERN = /max-width:\s*(\d+)px/;
+
+/**
+ * Answer a media query from the simulated width.
+ *
+ * Queries that are not about width (colour scheme, motion preference) report no
+ * match, which keeps the app in light mode with motion enabled.
+ *
+ * @param query Media query text.
+ * @returns A stub result object, as jsdom does not implement the real thing.
+ */
+const matchMediaStub = (query: string): MediaQueryList => {
+  const minWidth = MIN_WIDTH_PATTERN.exec(query);
+  const maxWidth = MAX_WIDTH_PATTERN.exec(query);
+  const isWidthQuery = Boolean(minWidth ?? maxWidth);
+
+  const matches =
+    isWidthQuery &&
+    (minWidth ? simulatedWidth >= Number(minWidth[1]) : true) &&
+    (maxWidth ? simulatedWidth <= Number(maxWidth[1]) : true);
+
+  return {
+    matches,
     media: query,
     onchange: null,
     addListener: () => undefined,
@@ -32,7 +70,8 @@ const matchMediaStub = (query: string): MediaQueryList =>
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
     dispatchEvent: () => false,
-  }) as unknown as MediaQueryList;
+  } as unknown as MediaQueryList;
+};
 
 browserWindow.matchMedia = matchMediaStub;
 globalThis.matchMedia = matchMediaStub;

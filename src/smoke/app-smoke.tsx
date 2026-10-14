@@ -1,11 +1,13 @@
 /**
  * Render smoke test: the app is mounted into a jsdom document, the rendered
- * markup is checked for the content a person must see, and one card is clicked
- * to check that marking a segment works and is stored.
+ * markup is checked for the content a person must see, one card is clicked to
+ * check that marking a segment works and is stored, the colour mode is switched
+ * and the layout is checked at three viewport widths.
  *
  * This is the closest check to opening the page that runs without a browser. It
  * catches a component that throws on render, a wrong prop that silently renders
- * nothing, an import that only fails at runtime, and a broken mark toggle.
+ * nothing, an import that only fails at runtime, a broken mark toggle and a
+ * column layout that drops cards.
  *
  * Run it with `npm run smoke`.
  */
@@ -16,11 +18,10 @@ import {writeFileSync} from 'node:fs';
 
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Theme} from '@astryxdesign/core/theme';
 
 import scheduleDocument from '../../data/schedule.json';
 import {App} from '../App';
-import {violetTheme} from '../theme';
+import {setSimulatedWidth} from './dom';
 
 /** How long to let React finish mounting, loading marks and re-rendering. */
 const SETTLE_MS = 100;
@@ -50,18 +51,90 @@ const EXPECTED_TEXTS = [
 /** How many of the shown day's segments carry a mark, and are clickable. */
 const EXPECTED_TRACKED_COUNT = 7;
 
+/** Width the content checks run at. */
+const MAIN_WIDTH = 1280;
+
+/** Widths to check the column layout at, with the columns each one must give. */
+const WIDTH_CASES = [
+  {width: 600, expectedColumns: 1},
+  {width: MAIN_WIDTH, expectedColumns: 2},
+  {width: 1500, expectedColumns: 3},
+];
+
 /** Storage key the marks are written under. */
 const MARKS_STORAGE_KEY = 'rasporyadok-dnya.marks';
 
+/** Storage key the colour mode is written under. */
+const THEME_MODE_STORAGE_KEY = 'rasporyadok-dnya.theme-mode';
+
 /**
- * Read every segment title of the shown day from the generated data, so a card
- * that stops rendering is caught rather than only the few texts listed above.
+ * Read every segment title of the shown day from the generated data.
  *
- * @returns Titles of the shown day's segments.
+ * @returns Titles of the shown day's segments, in time order.
  */
 function readShownDayTitles(): string[] {
   const days = scheduleDocument.days as Array<{key: string; entries: Array<{title: string}>}>;
   return days.find((day) => day.key === SHOWN_DAY_KEY)?.entries.map((entry) => entry.title) ?? [];
+}
+
+/** Wait for React to settle. */
+async function settle(): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
+}
+
+/**
+ * Mount the app at a simulated viewport width.
+ *
+ * @param width Viewport width in pixels.
+ * @returns The element the app was rendered into.
+ */
+async function mountApp(width: number): Promise<HTMLElement> {
+  setSimulatedWidth(width);
+  const host = document.createElement('div');
+  document.body.append(host);
+  createRoot(host).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+  await settle();
+  return host;
+}
+
+/**
+ * Find the column containers of the card layout.
+ *
+ * The layout renders one stack of cards per column inside a horizontal stack,
+ * which is what this looks for: a row whose every child holds a vertical stack.
+ *
+ * @param host Element the app was rendered into.
+ * @returns One element per column, empty when the layout is not found.
+ */
+function readColumns(host: HTMLElement): HTMLElement[] {
+  const rows = [...host.querySelectorAll<HTMLElement>('[data-direction="horizontal"]')];
+  let widest: HTMLElement[] = [];
+
+  for (const row of rows) {
+    const children = [...row.children] as HTMLElement[];
+    if (children.length === 0) {
+      continue;
+    }
+    const everyChildHoldsCards = children.every(
+      (child) => child.querySelector('[data-direction="vertical"]') !== null,
+    );
+    if (everyChildHoldsCards && children.length > widest.length) {
+      widest = children;
+    }
+  }
+
+  return widest;
+}
+
+/** Read the styles the theme injects into the document head. */
+function readInjectedStyles(): string {
+  return [...document.querySelectorAll('style')]
+    .map((styleElement) => styleElement.textContent ?? '')
+    .join('\n');
 }
 
 /** Stop the run with a failure after printing what went wrong. */
@@ -72,33 +145,9 @@ function fail(problems: string[]): never {
   process.exit(1);
 }
 
-/**
- * Read the styles the theme injects into the document head.
- *
- * @returns The concatenated CSS text.
- */
-function readInjectedStyles(): string {
-  return [...document.querySelectorAll('style')]
-    .map((styleElement) => styleElement.textContent ?? '')
-    .join('\n');
-}
-
-const container = document.getElementById('root');
-if (!container) {
-  throw new Error('the smoke document has no #root element');
-}
-
-createRoot(container).render(
-  <StrictMode>
-    <Theme theme={violetTheme}>
-      <App />
-    </Theme>
-  </StrictMode>,
-);
-
-await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
-
-const markup = container.innerHTML;
+const dayTitles = readShownDayTitles();
+const host = await mountApp(MAIN_WIDTH);
+const markup = host.innerHTML;
 
 // A dump helps when a check fails and the reason has to be read in the markup.
 if (process.env.SMOKE_DUMP) {
@@ -113,7 +162,6 @@ if (missingTexts.length > 0) {
   problems.push(`Не найдено в разметке: ${missingTexts.join(', ')}`);
 }
 
-const dayTitles = readShownDayTitles();
 const missingTitles = dayTitles.filter((title) => !markup.includes(title));
 if (missingTitles.length > 0) {
   problems.push(`Не найдено названий отрезков: ${missingTitles.join(', ')}`);
@@ -129,16 +177,6 @@ if (clickableCount !== EXPECTED_TRACKED_COUNT) {
   problems.push(`Кликабельных карточек ${clickableCount}, ожидалось ${EXPECTED_TRACKED_COUNT}`);
 }
 
-// The accent header is painted by a component override in the theme, so check
-// that the theme emitted it: without this rule the header falls back to a tint.
-const injectedStyles = readInjectedStyles();
-if (!injectedStyles.includes('.astryx-card[data-variant="purple"]')) {
-  problems.push('Тема не перекрасила вариант карточки purple');
-}
-if (!injectedStyles.includes('background-color: var(--color-accent)')) {
-  problems.push('Акцентный фон карточки не задан');
-}
-
 console.log(`Разметка отрисована: ${markup.length} символов`);
 console.log(`Карточек: ${cardCount}, из них кликабельных: ${clickableCount}`);
 
@@ -146,8 +184,34 @@ if (problems.length > 0) {
   fail(problems);
 }
 
+// The columns must read downwards: the first column takes the earliest segments
+// and the last one takes the latest, which a row-by-row grid would not do.
+const mainColumns = readColumns(host);
+const firstColumnText = mainColumns[0]?.textContent ?? '';
+const lastColumnText = mainColumns.at(-1)?.textContent ?? '';
+const columnProblems: string[] = [];
+
+if (mainColumns.length !== 2) {
+  columnProblems.push(`При ширине ${MAIN_WIDTH} колонок ${mainColumns.length}, ожидалось 2`);
+}
+if (!firstColumnText.includes(dayTitles[0])) {
+  columnProblems.push(`Первая колонка не начинается с «${dayTitles[0]}»`);
+}
+if (firstColumnText.includes(dayTitles.at(-1) ?? '')) {
+  columnProblems.push('Первая колонка содержит последний отрезок дня');
+}
+if (!lastColumnText.includes(dayTitles.at(-1) ?? '')) {
+  columnProblems.push(`Последняя колонка не содержит «${dayTitles.at(-1)}»`);
+}
+
+if (columnProblems.length > 0) {
+  fail(columnProblems);
+}
+
+console.log(`Колонки при ширине ${MAIN_WIDTH}: ${mainColumns.length}, порядок идёт сверху вниз`);
+
 // Mark the running segment by clicking its card, the way a person would.
-const cardButton = container.querySelector<HTMLButtonElement>(
+const cardButton = host.querySelector<HTMLButtonElement>(
   `button[aria-label^="${CLICKED_SEGMENT}"]`,
 );
 if (!cardButton) {
@@ -155,9 +219,9 @@ if (!cardButton) {
 }
 
 cardButton.click();
-await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
+await settle();
 
-const markupAfterClick = container.innerHTML;
+const markupAfterClick = host.innerHTML;
 const storedMarks = window.localStorage.getItem(MARKS_STORAGE_KEY) ?? '';
 const clickProblems: string[] = [];
 
@@ -181,15 +245,15 @@ if (clickProblems.length > 0) {
 console.log(`Нажатие карточки: отметка поставлена, прогресс 1 из ${EXPECTED_TRACKED_COUNT}, сохранено под ${SHOWN_DATE_KEY}`);
 
 // Switch the colour mode, the way a person would.
-const darkModeRadio = container.querySelector<HTMLElement>('[role="radio"][data-value="dark"]');
+const darkModeRadio = host.querySelector<HTMLElement>('[role="radio"][data-value="dark"]');
 if (!darkModeRadio) {
   fail(['Не найден переключатель тёмной темы']);
 }
 
 darkModeRadio.click();
-await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
+await settle();
 
-const lightRadio = container.querySelector<HTMLElement>('[role="radio"][data-value="light"]');
+const lightRadio = host.querySelector<HTMLElement>('[role="radio"][data-value="light"]');
 const modeProblems: string[] = [];
 
 if (darkModeRadio.getAttribute('aria-checked') !== 'true') {
@@ -198,7 +262,7 @@ if (darkModeRadio.getAttribute('aria-checked') !== 'true') {
 if (lightRadio?.getAttribute('aria-checked') !== 'false') {
   modeProblems.push('Светлая тема осталась выбранной');
 }
-if (window.localStorage.getItem('rasporyadok-dnya.theme-mode') !== 'dark') {
+if (window.localStorage.getItem(THEME_MODE_STORAGE_KEY) !== 'dark') {
   modeProblems.push('Выбор темы не сохранён в хранилище');
 }
 
@@ -207,6 +271,22 @@ if (modeProblems.length > 0) {
 }
 
 console.log('Переключатель темы: тёмная выбрана и сохранена');
+
+// Check the layout at every width it switches at.
+for (const {width, expectedColumns} of WIDTH_CASES) {
+  const wideHost = await mountApp(width);
+  const columns = readColumns(wideHost);
+  const allTitlesPresent = dayTitles.every((title) => wideHost.innerHTML.includes(title));
+
+  if (columns.length !== expectedColumns) {
+    fail([`При ширине ${width} колонок ${columns.length}, ожидалось ${expectedColumns}`]);
+  }
+  if (!allTitlesPresent) {
+    fail([`При ширине ${width} часть отрезков не отрисована`]);
+  }
+  console.log(`Ширина ${width}: колонок ${columns.length}, все отрезки на месте`);
+}
+
 console.log('Все проверки пройдены');
 
 // jsdom keeps timers and animation frames alive, so the process is stopped

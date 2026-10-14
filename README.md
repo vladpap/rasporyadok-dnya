@@ -71,7 +71,7 @@ Activity kinds:
 | `src/theme.ts` | The violet theme, built by extending the shipped neutral theme. |
 | `src/themeMode.ts` | Light or dark colour mode, remembered in local storage. |
 | `src/App.tsx` | Theme provider and application shell. |
-| `src/pages/schedule/page.tsx` | The page: accent header with the view and theme switches, selected date, clock, day and week views. |
+| `src/pages/schedule/page.tsx` | The page: accent header with the view switch and an icon-only light/dark switch on the right, selected date, clock, day and week views. |
 | `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in as many columns as the width allows. |
 | `src/components/WeekView.tsx` | The week: one row per day with its progress, opening a day. |
 | `src/components/EntryCard.tsx` | One segment as a card, clickable when it carries a mark. |
@@ -101,7 +101,8 @@ time and service rows readable without a colour override:
 The segment running now also carries a `сейчас` badge, so the state never rests on
 colour alone. A card that carries a mark is one control: the whole card toggles
 the mark and its accessible name states the segment and whether it is marked, so
-there is no second checkbox to tab to.
+there is no second checkbox to tab to. The card icon is centred against the card,
+so a three-line segment and a one-line segment look deliberate next to each other.
 
 ### Where marks are stored
 
@@ -122,9 +123,26 @@ keeps the tinted surface the theme derives, and that one variant carries both th
 page header and the cards that are marked done, so the header and the progress
 speak the same colour without either of them being filled with it.
 
-The light/dark switch sets the `mode` of the theme provider, and the choice is
-remembered in local storage; before the first choice the operating system
-preference decides.
+The theme also lifts the largest icon step from 1.5rem to 1.875rem:
+
+```ts
+components: {
+  icon: {
+    'size:lg': {width: '1.875rem', height: '1.875rem'},
+  },
+},
+```
+
+The icon scale stops at `lg`, and its documentation asks for the size steps rather
+than stray pixel values, so a quarter larger is a theme decision rather than a
+value at the call site. Only the segment icons use `lg`, while the check, badge
+and switch icons are smaller and keep their size; the smoke test checks that this
+rule is emitted.
+
+The light/dark switch shows a sun and a moon instead of text, with the labels kept
+as accessible names, and sits on the right of the header. It sets the `mode` of the
+theme provider, and the choice is remembered in local storage; before the first
+choice the operating system preference decides.
 
 Doing the palette at runtime makes the theme inject its styles on start, which
 the console reports once. Before a production push the theme can be built into

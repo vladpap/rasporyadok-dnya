@@ -177,6 +177,16 @@ if (clickableCount !== EXPECTED_TRACKED_COUNT) {
   problems.push(`Кликабельных карточек ${clickableCount}, ожидалось ${EXPECTED_TRACKED_COUNT}`);
 }
 
+// The segment icons are lifted above the icon scale in the theme, so check the
+// rule is emitted: without it the cards fall back to the standard large icon.
+const injectedStyles = readInjectedStyles();
+if (!injectedStyles.includes('.astryx-icon[data-size="lg"]')) {
+  problems.push('Тема не задала размер крупных иконок');
+}
+if (!injectedStyles.includes('1.875rem')) {
+  problems.push('Размер крупных иконок не задан');
+}
+
 console.log(`Разметка отрисована: ${markup.length} символов`);
 console.log(`Карточек: ${cardCount}, из них кликабельных: ${clickableCount}`);
 

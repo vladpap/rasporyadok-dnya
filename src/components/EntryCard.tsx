@@ -39,7 +39,7 @@ export function EntryCard({entry, isDone, isRunningNow, hasPassed, onToggle}: En
   const variant = isDone ? 'purple' : hasPassed || !entry.tracked ? 'muted' : 'default';
 
   const content = (
-    <Stack direction="horizontal" gap={3} vAlign="start">
+    <Stack direction="horizontal" gap={3} vAlign="center">
       <Icon icon={SegmentIcon} size="lg" />
       <Stack direction="vertical" gap={1}>
         <Stack direction="horizontal" gap={2} vAlign="center" wrap="wrap">

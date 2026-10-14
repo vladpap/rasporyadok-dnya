@@ -17,4 +17,17 @@ export const violetTheme = defineTheme({
   name: 'violet',
   extends: neutralTheme,
   color: {accent: '#7C3AED', neutralStyle: 'cool', contrast: 'standard'},
+  components: {
+    // The icon scale stops at `lg` (1.5rem, 24px) and the icon docs ask for the
+    // size props rather than stray pixel values. A quarter larger is what the
+    // schedule needs, so the scale step itself is lifted here. Only the segment
+    // icons use `lg`; the check, badge and switch icons are smaller and stay as
+    // they are. rem keeps the size tied to the root font size.
+    icon: {
+      'size:lg': {
+        width: '1.875rem',
+        height: '1.875rem',
+      },
+    },
+  },
 });

@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 
+# Render smoke test bundle
+.smoke/
+
 # Generated schedule data, rebuilt from data/schedule.csv by npm run data
 data/schedule.json
 

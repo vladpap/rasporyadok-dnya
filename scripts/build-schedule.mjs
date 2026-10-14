@@ -86,6 +86,7 @@ function createScheduleDocument(entries) {
           start: entry.start,
           end: entry.end,
           kind: entry.kind,
+          icon: entry.icon,
           title: entry.title,
           note: entry.note,
           tracked: entry.tracked,

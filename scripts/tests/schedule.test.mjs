@@ -39,6 +39,7 @@ function makeEntry(overrides = {}) {
     start: '09:00',
     end: '10:30',
     kind: 'study',
+    icon: 'Calculator',
     title: 'Математика',
     note: '',
     tracked: true,
@@ -140,6 +141,11 @@ describe('validateEntries', () => {
     const { errors } = validateEntries([makeEntry({ kind: 'hobby', title: '  ' })]);
     assert.ok(errors.some((message) => /неизвестный вид/.test(message)));
     assert.ok(errors.some((message) => /пустое название/.test(message)));
+  });
+
+  it('reports an icon that is not a component name', () => {
+    const { errors } = validateEntries([makeEntry({ icon: 'dumbbell' })]);
+    assert.ok(errors.some((message) => /иконка/.test(message)));
   });
 
   it('accepts the schedule that ships with the project', () => {

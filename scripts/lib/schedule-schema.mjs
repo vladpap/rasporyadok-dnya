@@ -7,7 +7,17 @@
  */
 
 /** Column names of the schedule CSV, in file order. */
-export const ENTRY_FIELDS = ['day', 'id', 'start', 'end', 'kind', 'title', 'note', 'tracked'];
+export const ENTRY_FIELDS = [
+  'day',
+  'id',
+  'start',
+  'end',
+  'kind',
+  'icon',
+  'title',
+  'note',
+  'tracked',
+];
 
 /** Activity kinds. `tracked` rows count toward the daily progress. */
 export const ENTRY_KINDS = ['routine', 'study', 'sport', 'break', 'rest', 'sleep'];
@@ -32,6 +42,12 @@ export const MINUTES_PER_DAY = 24 * 60;
 
 const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/**
+ * Icon names are written as component names, for example `Dumbbell`, because
+ * the app looks them up in its icon registry by that same name.
+ */
+const ICON_PATTERN = /^[A-Z][A-Za-z0-9]*$/;
 
 /**
  * Convert `HH:MM` into minutes from midnight.
@@ -76,6 +92,7 @@ export function createEntry(record) {
     start: record.start ?? '',
     end: record.end ?? '',
     kind: record.kind ?? '',
+    icon: record.icon ?? '',
     title: record.title ?? '',
     note: record.note ?? '',
     tracked: record.tracked === 'yes',
@@ -132,6 +149,10 @@ export function validateEntries(entries) {
 
     if (!ENTRY_KINDS.includes(entry.kind)) {
       errors.push(`${where}: неизвестный вид "${entry.kind}", допустимы ${ENTRY_KINDS.join(', ')}`);
+    }
+
+    if (!ICON_PATTERN.test(entry.icon)) {
+      errors.push(`${where}: иконка "${entry.icon}" должна быть именем компонента, например Dumbbell`);
     }
 
     if (entry.title.trim() === '') {

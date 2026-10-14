@@ -22,6 +22,8 @@ export type ScheduleEntry = {
   start: string;
   end: string;
   kind: EntryKind;
+  /** Icon name looked up in the icon registry, for example `Dumbbell`. */
+  icon: string;
   title: string;
   note: string;
   tracked: boolean;

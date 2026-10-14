@@ -47,7 +47,8 @@ day,id,start,end,kind,title,note,tracked
 | `id` | Stable identifier, must start with the day key, for example `mon-0900-math`. Progress marks are stored against it, so renaming a title never loses history. |
 | `start`, `end` | Time of day as `HH:MM`, 24-hour clock. |
 | `kind` | Activity kind, see below. |
-| `title` | Short Russian title shown in the list. |
+| `icon` | Icon name the app looks up in its registry, for example `Dumbbell` or `Calculator`. An unknown name renders a question mark instead of breaking the page. |
+| `title` | Short Russian title shown in the card. |
 | `note` | Optional Russian clarification, for example `алгебра / геометрия`. |
 | `tracked` | `yes` when the row has a checkbox and counts toward the daily progress, otherwise `no`. |
 
@@ -70,19 +71,31 @@ Activity kinds:
 | `src/theme.ts` | The violet theme, built by extending the shipped neutral theme. |
 | `src/App.tsx` | Application shell. |
 | `src/pages/schedule/page.tsx` | The page: selected date, clock, day and week views. |
-| `src/components/DayView.tsx` | One day: header with the date and progress, then the segments. |
+| `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in a responsive grid. |
 | `src/components/WeekView.tsx` | The week: one row per day with its progress, opening a day. |
-| `src/components/EntryRow.tsx` | One segment as a row, with a checkbox when it is tracked. |
+| `src/components/EntryCard.tsx` | One segment as a card, clickable when it carries a mark. |
+| `src/icons.ts` | Icon names from the data mapped to icon components. |
 | `src/schedule.ts` | Typed access to the generated data and the time rules. |
 | `src/marks.ts` | Where the done marks live. |
 | `src/useMarks.ts` | Hooks that load and update marks for a day and a week. |
 | `src/useCurrentTime.ts` | Clock that refreshes the page while it stays open. |
 
-Two rules shape the day view. The part of the day that already passed sits on a
-muted section, so passed time reads as grey without a per-row colour override,
-and the segment running now carries a `сейчас` badge, so the state does not rely
-on colour alone. Segments with `tracked=yes` get a checkbox; breaks, meals and
-sleep do not, and they stay out of the day progress.
+The day view is a card grid: `Grid` picks the column count from the available
+width, so a phone gets one column, a tablet two and a desktop up to three. Each
+card carries its own state, which keeps passed time and service rows readable
+without a colour override:
+
+| Card state | Look |
+| --- | --- |
+| Marked | Accent background with a check |
+| Time already passed, not marked | Muted background |
+| Break, meal or sleep | Muted background, no mark, not clickable |
+| Still ahead | Standard card surface |
+
+The segment running now also carries a `сейчас` badge, so the state never rests on
+colour alone. A card that carries a mark is one control: the whole card toggles
+the mark and its accessible name states the segment and whether it is marked, so
+there is no second checkbox to tab to.
 
 ### Where marks are stored
 
@@ -127,6 +140,8 @@ title, an overlap inside one day and a day without entries. Gaps inside a day ar
 printed as warnings, because a gap is sometimes intended.
 
 `npm run smoke` is the closest check to opening the page that runs without a
-browser: it mounts the app into a jsdom document with a frozen clock and fails
-when expected content is missing. Set `SMOKE_DUMP=/tmp/page.html` to write the
+browser: it mounts the app into a jsdom document with a frozen clock, checks that
+every segment of the shown day renders as a card, clicks the running card and
+verifies that the mark appears, that the day progress moves and that the mark is
+stored under that calendar day. Set `SMOKE_DUMP=/tmp/page.html` to write the
 rendered markup for inspection.

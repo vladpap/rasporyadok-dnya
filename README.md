@@ -112,10 +112,26 @@ returning that store from `createMarkStore()`; no view changes.
 
 The violet theme extends `@astryxdesign/theme-neutral` and re-seeds the palette
 from one accent colour, which expands into surfaces, text, borders and overlays
-for light and dark mode. It also sets `--color-background-purple`, because the
-`purple` card variant carries both the page header and the marks that are done: a
-soft tint in light mode and a deep violet in dark mode keep the text readable in
-both, which the categorical default does not guarantee once the accent moved.
+for light and dark mode. It also repaints the `purple` card variant as a
+saturated accent surface:
+
+```ts
+components: {
+  card: {
+    'variant:purple': {
+      backgroundColor: 'var(--color-accent)',
+      color: 'var(--color-on-accent)',
+    },
+  },
+},
+```
+
+That variant carries both the page header and the cards that are marked done, so
+one rule gives the page its accent top and fills it in as the day progresses.
+Surface and text colour move together, which is why a marked card drops the
+secondary text colour: it would lose contrast on the accent fill. The smoke test
+checks that the theme emitted this rule, since without it the header silently
+falls back to a tint.
 
 The light/dark switch sets the `mode` of the theme provider, and the choice is
 remembered in local storage; before the first choice the operating system

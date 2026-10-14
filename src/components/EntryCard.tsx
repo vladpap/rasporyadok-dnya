@@ -38,20 +38,27 @@ export function EntryCard({entry, isDone, isRunningNow, hasPassed, onToggle}: En
 
   const variant = isDone ? 'purple' : hasPassed || !entry.tracked ? 'muted' : 'default';
 
+  // A marked card is painted with the accent surface, so its secondary text
+  // colour would drop out of contrast: there the text inherits the on-accent
+  // colour the theme sets together with that surface.
+  const secondaryColor = isDone ? undefined : 'secondary';
+
   const content = (
     <Stack direction="horizontal" gap={3} vAlign="start">
       <Icon icon={SegmentIcon} size="lg" />
       <Stack direction="vertical" gap={1}>
         <Stack direction="horizontal" gap={2} vAlign="center" wrap="wrap">
-          <Text type="label" color="secondary">
+          <Text type="label" color={secondaryColor}>
             {formatTimeRange(entry)}
           </Text>
           {isDone && <Icon icon="check" size="sm" label="отмечено" />}
-          {isRunningNow && <Badge label="сейчас" variant="purple" />}
+          {isRunningNow && (
+            <Badge label="сейчас" variant={isDone ? 'neutral' : 'purple'} />
+          )}
         </Stack>
         <Heading level={4}>{entry.title}</Heading>
         {entry.note ? (
-          <Text type="supporting" color="secondary">
+          <Text type="supporting" color={secondaryColor}>
             {entry.note}
           </Text>
         ) : null}

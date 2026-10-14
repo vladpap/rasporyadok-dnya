@@ -72,6 +72,17 @@ function fail(problems: string[]): never {
   process.exit(1);
 }
 
+/**
+ * Read the styles the theme injects into the document head.
+ *
+ * @returns The concatenated CSS text.
+ */
+function readInjectedStyles(): string {
+  return [...document.querySelectorAll('style')]
+    .map((styleElement) => styleElement.textContent ?? '')
+    .join('\n');
+}
+
 const container = document.getElementById('root');
 if (!container) {
   throw new Error('the smoke document has no #root element');
@@ -92,6 +103,7 @@ const markup = container.innerHTML;
 // A dump helps when a check fails and the reason has to be read in the markup.
 if (process.env.SMOKE_DUMP) {
   writeFileSync(process.env.SMOKE_DUMP, markup);
+  writeFileSync(`${process.env.SMOKE_DUMP}.head.css`, readInjectedStyles());
 }
 
 const problems: string[] = [];
@@ -115,6 +127,16 @@ if (cardCount < dayTitles.length) {
 }
 if (clickableCount !== EXPECTED_TRACKED_COUNT) {
   problems.push(`Кликабельных карточек ${clickableCount}, ожидалось ${EXPECTED_TRACKED_COUNT}`);
+}
+
+// The accent header is painted by a component override in the theme, so check
+// that the theme emitted it: without this rule the header falls back to a tint.
+const injectedStyles = readInjectedStyles();
+if (!injectedStyles.includes('.astryx-card[data-variant="purple"]')) {
+  problems.push('Тема не перекрасила вариант карточки purple');
+}
+if (!injectedStyles.includes('background-color: var(--color-accent)')) {
+  problems.push('Акцентный фон карточки не задан');
 }
 
 console.log(`Разметка отрисована: ${markup.length} символов`);

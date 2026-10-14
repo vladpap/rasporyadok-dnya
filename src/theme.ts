@@ -9,16 +9,22 @@ import {neutralTheme} from '@astryxdesign/theme-neutral';
  * and hover overlays for light and dark mode alike, so no component needs a
  * local colour override and both modes stay coherent.
  *
- * `--color-background-purple` is set because the app uses the `purple` card
- * variant for two jobs: the page header and the cards that are marked as done.
- * A soft tint in light mode and a deep violet in dark mode keep text readable on
- * both, which the categorical default does not guarantee once the accent moved.
+ * The `purple` card variant is repainted as a saturated accent surface with the
+ * matching on-accent text. That variant carries the page header and the cards
+ * that are marked done, so the accent marks both the top of the page and the
+ * progress down it, and the text stays readable because the surface and its text
+ * colour move together.
  */
 export const violetTheme = defineTheme({
   name: 'violet',
   extends: neutralTheme,
   color: {accent: '#7C3AED', neutralStyle: 'cool', contrast: 'standard'},
-  tokens: {
-    '--color-background-purple': ['#EFE7FE', '#2B1B5E'],
+  components: {
+    card: {
+      'variant:purple': {
+        backgroundColor: 'var(--color-accent)',
+        color: 'var(--color-on-accent)',
+      },
+    },
   },
 });

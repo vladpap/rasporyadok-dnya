@@ -115,16 +115,13 @@ function themeParts(key: ThemeKey) {
           // coloured, and two surfaces of the same mixture came out identical, so
           // the badge disappeared exactly when the card was marked. A solid accent
           // stands out on both the plain card and the accent one.
+          //
+          // Sizing is deliberately left out here. The badge's own compiled classes
+          // raise their specificity with `:not(#\#)` chains and set both its
+          // padding and its minimum width, so a rule in this layer loses to them
+          // and the width never changes. The label text is what sets the width.
           backgroundColor: 'var(--color-accent)',
           color: 'var(--color-on-accent)',
-          // The running badge is a short word on a busy card, so it is given a
-          // minimum width as well as room around the word. Padding alone widened
-          // the pill by a couple of millimetres, because the label is only six
-          // letters: the minimum is what makes it read as a label rather than as a
-          // stray dot of colour.
-          paddingInline: 'var(--spacing-4)',
-          minWidth: 'var(--spacing-12)',
-          justifyContent: 'center',
         },
       },
       icon: {

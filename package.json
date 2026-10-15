@@ -6,6 +6,7 @@
   "scripts": {
     "data": "node scripts/build-schedule.mjs",
     "data:check": "node scripts/build-schedule.mjs --check",
+    "import": "node scripts/import-schedule.mjs",
     "test": "node --test scripts/tests/*.test.mjs",
     "dev": "npm run data && vite",
     "build": "npm run data && tsc --noEmit && vite build",
@@ -16,6 +17,7 @@
     "@astryxdesign/core": "^0.7.0",
     "@astryxdesign/theme-neutral": "^0.7.0",
     "@stylexjs/stylex": "^0.19.1",
+    "@supabase/supabase-js": "^2.109.0",
     "lucide-react": "^1.57.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"

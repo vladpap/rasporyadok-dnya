@@ -13,14 +13,16 @@ import {
   countProgress,
   dateKey,
   formatDayTitle,
-  getScheduleDay,
   isSameDate,
+  type ScheduleDay,
 } from '../schedule';
 import {useRangeMarks} from '../useMarks';
 
 type WeekViewProps = {
   /** Monday of the shown week. */
   weekStart: Date;
+  /** The loaded schedule, one entry per week day. */
+  week: ScheduleDay[];
   today: Date;
   store: MarkStore;
   onOpenDay: (date: Date) => void;
@@ -40,17 +42,19 @@ const PROGRESS_FLOOR = 1;
  * @param props Week to show, the clock, storage and the day opener.
  * @returns The week view.
  */
-export function WeekView({weekStart, today, store, onOpenDay}: WeekViewProps) {
+export function WeekView({weekStart, week, today, store, onOpenDay}: WeekViewProps) {
   const dayKeys = DAY_KEYS.map((_, index) => dateKey(addDays(weekStart, index)));
   const marksByDay = useRangeMarks(dayKeys, store);
   const weekEnd = addDays(weekStart, DAY_KEYS.length - 1);
+  const daysByKey = new Map(week.map((day) => [day.key, day]));
+  const entriesOf = (dayKey: (typeof DAY_KEYS)[number]) => daysByKey.get(dayKey)?.entries ?? [];
 
   // Sum the marked and countable segments across every day of the week, so the
   // header can show how much of the whole week is done beside the per-day bars.
   const weekProgress = DAY_KEYS.reduce(
     (totals, dayKey, index) => {
       const {done, total} = countProgress(
-        getScheduleDay(dayKey).entries,
+        entriesOf(dayKey),
         marksByDay.get(dateKey(addDays(weekStart, index))) ?? new Set<string>(),
       );
       return {done: totals.done + done, total: totals.total + total};
@@ -96,18 +100,20 @@ export function WeekView({weekStart, today, store, onOpenDay}: WeekViewProps) {
         <List density="balanced" hasDividers>
           {DAY_KEYS.map((dayKey, index) => {
             const date = addDays(weekStart, index);
-            const day = getScheduleDay(dayKey);
+            const day = daysByKey.get(dayKey);
+            const dayLabel = day?.label ?? dayKey;
+            const dayFullLabel = day?.fullLabel ?? dayKey;
             const doneIds = marksByDay.get(dateKey(date)) ?? new Set<string>();
-            const {done, total} = countProgress(day.entries, doneIds);
+            const {done, total} = countProgress(day?.entries ?? [], doneIds);
 
             return (
               <ListItem
                 key={dayKey}
-                label={`${day.label} · ${formatDayTitle(date)}`}
+                label={`${dayLabel} · ${formatDayTitle(date)}`}
                 description={
                   <Stack direction="vertical" gap={1}>
                     <ProgressBar
-                      label={`Прогресс: ${day.fullLabel}`}
+                      label={`Прогресс: ${dayFullLabel}`}
                       value={done}
                       max={total || PROGRESS_FLOOR}
                       hasValueLabel

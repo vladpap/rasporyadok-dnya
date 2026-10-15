@@ -17,8 +17,8 @@ import {
   dateKey,
   dayKeyForDate,
   formatDayTitle,
-  getScheduleDay,
   isSameDate,
+  type ScheduleDay,
 } from '../schedule';
 import {useRangeMarks} from '../useMarks';
 import {ProgressRing} from './ProgressRing';
@@ -26,6 +26,8 @@ import {ProgressRing} from './ProgressRing';
 type MonthViewProps = {
   /** Any date inside the month to show. */
   monthAnchor: Date;
+  /** The loaded schedule, one entry per week day. */
+  week: ScheduleDay[];
   today: Date;
   store: MarkStore;
   /** Move the shown month, without leaving the month view. */
@@ -64,6 +66,7 @@ const PROGRESS_FLOOR = 1;
  */
 export function MonthView({
   monthAnchor,
+  week,
   today,
   store,
   onNavigateMonth,
@@ -73,13 +76,12 @@ export function MonthView({
   const weeks = buildMonthGrid(monthAnchor);
   const marksByDay = useRangeMarks(monthGridKeys(weeks), store);
   const daysInMonth = weeks.flat().filter((date) => isSameMonth(date, monthAnchor));
+  const daysByKey = new Map(week.map((day) => [day.key, day]));
+  const entriesOf = (date: Date) => daysByKey.get(dayKeyForDate(date))?.entries ?? [];
 
   const monthProgress = daysInMonth.reduce(
     (totals, date) => {
-      const {done, total} = countProgress(
-        getScheduleDay(dayKeyForDate(date)).entries,
-        marksByDay.get(dateKey(date)) ?? NO_MARKS,
-      );
+      const {done, total} = countProgress(entriesOf(date), marksByDay.get(dateKey(date)) ?? NO_MARKS);
       return {done: totals.done + done, total: totals.total + total};
     },
     {done: 0, total: 0},
@@ -137,16 +139,14 @@ export function MonthView({
           {DAY_KEYS.map((dayKey) => (
             <Stack key={dayKey} direction="vertical" hAlign="center">
               <Text type="label" color="secondary">
-                {getScheduleDay(dayKey).label}
+                {daysByKey.get(dayKey)?.label ?? dayKey}
               </Text>
             </Stack>
           ))}
 
           {weeks.flat().map((date) => {
-            const dayKey = dayKeyForDate(date);
-            const schedule = getScheduleDay(dayKey);
             const doneIds = marksByDay.get(dateKey(date)) ?? NO_MARKS;
-            const {done, total} = countProgress(schedule.entries, doneIds);
+            const {done, total} = countProgress(entriesOf(date), doneIds);
             const isToday = isSameDate(date, today);
             const belongsToMonth = isSameMonth(date, monthAnchor);
 

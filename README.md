@@ -9,9 +9,10 @@ without touching the application.
 | Layer | Path | Role |
 | --- | --- | --- |
 | Original input | `preparation/raspisanie.csv` | The schedule as it was first written, kept for reference. Never edited. |
-| Canonical source | `data/schedule.csv` | The normalized schedule: one row per time segment. **This is the file to edit.** |
-| Generated data | `data/schedule.json` | Built from the canonical source by the data step. Never edited by hand. |
-| Application | `src/` | The web app that reads the generated data. |
+| Import source | `data/schedule.csv` | The normalized schedule: one row per time segment. Loaded into the database once by `npm run import`, and kept as the readable history of that first set. |
+| Generated data | `data/schedule.json` | Built from the import source by the data step. Used for the offline smoke test, never edited by hand. |
+| Database | Supabase `schedule` + `marks` | Where the schedule and the done marks live now. The site reads them on start, so a change is visible on every device without a rebuild. |
+| Application | `src/` | The web app that reads the schedule and writes it back through the edit page. |
 
 ## Why the schedule was normalized
 
@@ -144,15 +145,51 @@ answer "how much of this whole period is done" at a glance; in the week the summ
 bar is set apart from the list of days by a strong divider, because the total is a
 different reading than the per-day rows.
 
-### Where marks are stored
+### Where the data lives
 
-`src/marks.ts` defines a `MarkStore` interface, and `createMarkStore()` returns
-the store the app uses, currently one backed by local storage. Marks are kept per
-calendar day, so history accumulates and the week view can read any day.
+The schedule and the done marks are both in Supabase, and the app talks to it with
+the public project URL and the public anon key. Those two are safe to publish: the
+database protects itself with row level security, which lets everyone read the
+schedule and lets only signed in users change it. The service role key, which
+bypasses those policies, is deliberately not used anywhere in the app.
 
-Local storage means marks stay on one device and disappear when site data is
-cleared. Moving them to Supabase means implementing the same methods and
-returning that store from `createMarkStore()`; no view changes.
+| Table | Holds | Key |
+| --- | --- | --- |
+| `schedule` | One row per time segment: `id, day, start_time, end_time, kind, icon, title, note, tracked, sort_order` | `id`, a stable slug such as `wed-0900-math` |
+| `marks` | One row per marked segment of a calendar day: `day_key, entry_id, done_at` | `(day_key, entry_id)` |
+
+The stable `id` is what the marks point at, so renaming a title never loses
+history. `marks` cascades on delete, so removing a segment removes its marks.
+
+The database repeats the rules the build script enforced, as `check` constraints:
+the time format, the allowed week days and kinds, a non-empty title and an end
+after the start. A row that would break the app cannot be written.
+
+`src/marks.ts` defines a `MarkStore` interface and `createMarkStore()` returns the
+store the app uses, so switching storage touches nothing else. The Supabase store
+loads one day with a filtered read and saves it by replacing that day's rows; the
+local storage store is kept for the smoke test, which runs offline.
+
+### Loading the schedule
+
+The schedule is read once on start, so the page shows a short loading state, then
+the views, or an error with a retry when the read fails.
+`src/scheduleStore.ts` maps table rows to the model and `src/useSchedule.ts` owns
+the fetch and its state, which keeps `src/schedule.ts` pure: types, formatting and
+time rules only.
+
+### Importing the CSV once
+
+`data/schedule.csv` is the readable first set of segments. Importing it is a
+one-off step, and it signs in first because row level security lets only signed in
+users write:
+
+```sh
+SUPABASE_EMAIL=you@example.com SUPABASE_PASSWORD=your-password npm run import
+```
+
+The script validates the CSV with the same rules as the build, upserts every row
+by its stable id, and reports how many rows the table holds afterwards.
 
 ### Theme
 
@@ -219,6 +256,7 @@ its record of the installed theme; the app imports the theme CSS directly.
 ```sh
 npm run data        # validate data/schedule.csv and write data/schedule.json
 npm run data:check  # validate only, used by CI
+npm run import      # load data/schedule.csv into the Supabase schedule table
 npm test            # tests for the CSV helpers and the schedule rules
 npm run dev         # data step, then the development server
 npm run build       # data step, type check, production build

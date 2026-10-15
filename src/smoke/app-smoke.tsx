@@ -23,6 +23,17 @@ import scheduleDocument from '../../data/schedule.json';
 import {App} from '../App';
 import {resetSimulatedNow, setSimulatedNow, setSimulatedWidth} from './dom';
 
+/**
+ * Hand the app its schedule and its mark store without a network.
+ *
+ * The app reads both from Supabase, which a jsdom run cannot reach. The week
+ * comes from the generated JSON and the marks stay in local storage, so the test
+ * exercises the real components and the real mark flow, offline and repeatable.
+ */
+(globalThis as {__rasporyadokScheduleWeek?: unknown}).__rasporyadokScheduleWeek =
+  scheduleDocument.days;
+(window as unknown as {__rasporyadokUseLocalMarks?: boolean}).__rasporyadokUseLocalMarks = true;
+
 /** How long to let React finish mounting, loading marks and re-rendering. */
 const SETTLE_MS = 100;
 

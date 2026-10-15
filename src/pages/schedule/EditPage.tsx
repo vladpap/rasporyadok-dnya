@@ -9,7 +9,7 @@ import {IconButton} from '@astryxdesign/core/IconButton';
 import {Layout, LayoutContent, Stack} from '@astryxdesign/core/Layout';
 import {SegmentedControl, SegmentedControlItem} from '@astryxdesign/core/SegmentedControl';
 import {Section} from '@astryxdesign/core/Section';
-import {Selector} from '@astryxdesign/core/Selector';
+import {Selector, SelectorOption} from '@astryxdesign/core/Selector';
 import {Switch} from '@astryxdesign/core/Switch';
 import {Heading, Text} from '@astryxdesign/core/Text';
 import {TextInput} from '@astryxdesign/core/TextInput';
@@ -150,6 +150,14 @@ export function EditPage({week, onSaved, onClose}: EditPageProps) {
     }).length;
     return removed + changed;
   }, [drafts, savedDrafts]);
+
+  // The icon choice is a name in the data, which reads as nothing to a person,
+  // so the dropdown draws the icon itself beside each name. The same renderer
+  // serves the closed trigger's value, so the chosen picture stays visible.
+  const renderIconOption = (option: {value: string; label?: string}) => {
+    const OptionIcon = resolveIcon(option.value);
+    return <SelectorOption label={option.label ?? option.value} icon={OptionIcon} />;
+  };
 
   const updateDraft = (index: number, patch: Partial<DraftEntry>) => {
     setDrafts((current) =>
@@ -326,6 +334,8 @@ export function EditPage({week, onSaved, onClose}: EditPageProps) {
                         options={iconNames}
                         value={draft.icon}
                         onChange={(value) => updateDraft(index, {icon: value})}
+                        renderOption={renderIconOption}
+                        renderValue={renderIconOption}
                         hasSearch
                         searchPlaceholder="Найти иконку"
                         width={200}

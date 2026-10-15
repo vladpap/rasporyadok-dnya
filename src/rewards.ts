@@ -9,7 +9,7 @@
  * so there the highest award is given for finishing whatever the day holds.
  */
 
-import {type ScheduleEntry} from './schedule';
+import {isMarkingOpen, type ScheduleEntry} from './schedule';
 
 /** What one star is worth, by the order the segment closed. */
 const STAR_VALUES = [1, 1, 1, 1, 2, 3, 6] as const;
@@ -52,24 +52,19 @@ export type DayAward = {
 const WEEKEND_DAYS = new Set(['sat', 'sun']);
 
 /**
- * Whether a segment has earned its star.
+ * Whether a segment has closed its marking window while carrying a mark.
  *
- * TEMPORARY, for checking how the stars appear: a mark earns its star at once,
- * without waiting for the marking window to close. The shipped rule waits, so a
- * mark that can still be taken back has not earned anything yet. Restore this
- * function to `isDone && !isMarkingOpen(date, entry, now)` afterwards.
+ * This is what makes a star final: while the window is open the mark can still be
+ * taken back, so the segment has not earned anything yet.
  *
  * @param entry Segment of the shown day.
  * @param date The day being shown.
  * @param now The current moment.
  * @param isDone Whether the segment carries a mark.
- * @returns True when the mark has earned a star.
+ * @returns True when the mark is final.
  */
 function hasClosed(entry: ScheduleEntry, date: Date, now: Date, isDone: boolean): boolean {
-  void entry;
-  void date;
-  void now;
-  return isDone;
+  return isDone && !isMarkingOpen(date, entry, now);
 }
 
 /**

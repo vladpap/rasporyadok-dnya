@@ -73,7 +73,7 @@ Activity kinds:
 | `src/App.tsx` | Theme provider and application shell. |
 | `src/pages/schedule/page.tsx` | The page: accent header with the view switch and an icon-only light/dark switch on the right, selected date, clock, and the day, week and month views. |
 | `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in as many columns as the width allows. |
-| `src/components/WeekView.tsx` | The week: a header with the summed week progress, then one row per day with its own progress, opening a day. |
+| `src/components/WeekView.tsx` | The week: a header with the summed week progress, a divider, then one row per day with its own progress, opening a day. |
 | `src/components/MonthView.tsx` | The month: a header with the summed month progress and prev/next buttons, then one progress ring per day, opening a day. |
 | `src/components/ProgressRing.tsx` | The small SVG ring a month day is drawn with, one ring per shape. |
 | `src/components/EntryCard.tsx` | One segment as a card, clickable when it carries a mark. |
@@ -138,7 +138,9 @@ header shows the nominative month (`октябрь 2026`), a badge and progress 
 every countable segment of the month, and the total marked in the month; chevron
 buttons move to the previous and next month. Clicking any day opens that day's
 view. The week view has the same summed progress in its own header, so both views
-answer "how much of this whole period is done" at a glance.
+answer "how much of this whole period is done" at a glance; in the week the summed
+bar is set apart from the list of days by a strong divider, because the total is a
+different reading than the per-day rows.
 
 ### Where marks are stored
 
@@ -158,6 +160,25 @@ for light and dark mode. The accent stays an accent: the `purple` card variant
 keeps the tinted surface the theme derives, and that one variant carries both the
 page header and the cards that are marked done, so the header and the progress
 speak the same colour without either of them being filled with it.
+
+The progress bars would otherwise be a different colour than the rest of the app.
+The neutral theme keeps its status accent fill blue even after `color.accent`
+re-seeds the general accent ramp, and the `ProgressBar` accent variant reads that
+status token rather than `--color-accent`. A `progress-bar` component override
+re-points the accent fill to the violet, so the day, week and month bars all match
+the accent:
+
+```ts
+components: {
+  'progress-bar': {
+    'variant:accent': {'--color-accent': 'light-dark(#7131E3, #DAB8FF)'},
+  },
+  ...
+}
+```
+
+The two hex values are exactly what the accent seed expands to in light and dark
+mode, so the bar matches the accent instead of inheriting the neutral blue.
 
 The theme also lifts the largest icon step from 1.5rem to 1.875rem:
 

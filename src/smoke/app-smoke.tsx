@@ -322,6 +322,9 @@ if (!weekMarkup.includes(`сделано ${WEEK_DONE} из ${WEEK_TOTAL}`)) {
     `Итог недели не ${WEEK_DONE} из ${WEEK_TOTAL}, как ожидалось после одной отметки`,
   );
 }
+if (!weekMarkup.includes('astryx-divider')) {
+  weekProblems.push('Итог недели не отделён от списка дней деливером');
+}
 
 if (weekProblems.length > 0) {
   fail(weekProblems);

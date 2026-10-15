@@ -1,4 +1,5 @@
 import {Badge} from '@astryxdesign/core/Badge';
+import {Divider} from '@astryxdesign/core/Divider';
 import {Stack} from '@astryxdesign/core/Layout';
 import {List, ListItem} from '@astryxdesign/core/List';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
@@ -85,6 +86,11 @@ export function WeekView({weekStart, today, store, onOpenDay}: WeekViewProps) {
           />
         </Stack>
       </Section>
+
+      {/* The weekly total above and the per-day rows below are different
+          readings, so a visible divider keeps the sum from blurring into the
+          list of days. */}
+      <Divider variant="strong" isFullBleed />
 
       <Section variant="transparent" padding={0}>
         <List density="balanced" hasDividers>

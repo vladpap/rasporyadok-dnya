@@ -30,10 +30,21 @@ type AwardStarProps = {
   kind: AwardKind;
   /** Width in pixels; the height follows the drawing's own ratio. */
   size?: number;
+  /**
+   * Whether this place is still to earn rather than earned.
+   *
+   * A pending place keeps the shape of the star, so the row reads as a set of
+   * places rather than a count that grows, and is faded so the earned ones stand
+   * out from it.
+   */
+  isPending?: boolean;
 };
 
 /** Width used when the caller does not pick one. */
 const DEFAULT_SIZE = 28;
+
+/** Opacity of a place that is still to earn, so it reads as an outline of one. */
+const PENDING_OPACITY = 0.28;
 
 /** The shared viewBox of every drawing, so one width is enough. */
 const VIEW_BOX = '0 0 122.54 113.47';
@@ -157,10 +168,14 @@ const SHAPES_BY_KIND: Record<AwardKind, ReadonlyArray<{d: string; fill: string}>
 /**
  * Draw one award.
  *
- * @param props Which award and how wide to draw it.
+ * @param props Which award, how wide to draw it, and whether it is still to earn.
  * @returns An inline SVG award.
  */
-export function AwardStar({kind, size = DEFAULT_SIZE}: AwardStarProps): ReactNode {
+export function AwardStar({
+  kind,
+  size = DEFAULT_SIZE,
+  isPending = false,
+}: AwardStarProps): ReactNode {
   return (
     <svg
       width={size}
@@ -169,7 +184,9 @@ export function AwardStar({kind, size = DEFAULT_SIZE}: AwardStarProps): ReactNod
       role="img"
       aria-hidden="true"
       focusable="false"
+      opacity={isPending ? PENDING_OPACITY : 1}
       data-award={kind}
+      data-pending={isPending ? '' : undefined}
     >
       {SHAPES_BY_KIND[kind].map((shape, index) => (
         <path key={index} d={shape.d} fill={shape.fill} />

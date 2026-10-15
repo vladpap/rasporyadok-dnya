@@ -117,18 +117,18 @@ async function mountApp(width: number): Promise<HTMLElement> {
 /**
  * Find the column containers of the card layout.
  *
- * The layout renders one stack of cards per column inside a horizontal stack,
- * which is what this looks for: a row whose every child holds a vertical stack.
+ * The layout renders one stack of cards per grid cell, which is what this looks
+ * for: a grid whose every child holds a vertical stack.
  *
  * @param host Element the app was rendered into.
  * @returns One element per column, empty when the layout is not found.
  */
 function readColumns(host: HTMLElement): HTMLElement[] {
-  const rows = [...host.querySelectorAll<HTMLElement>('[data-direction="horizontal"]')];
+  const grids = [...host.querySelectorAll<HTMLElement>('.astryx-grid')];
   let widest: HTMLElement[] = [];
 
-  for (const row of rows) {
-    const children = [...row.children] as HTMLElement[];
+  for (const grid of grids) {
+    const children = [...grid.children] as HTMLElement[];
     if (children.length === 0) {
       continue;
     }

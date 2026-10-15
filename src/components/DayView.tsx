@@ -1,7 +1,8 @@
 import {Badge} from '@astryxdesign/core/Badge';
+import {Grid} from '@astryxdesign/core/Grid';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
 import {Section} from '@astryxdesign/core/Section';
-import {Stack, StackItem} from '@astryxdesign/core/Stack';
+import {Stack} from '@astryxdesign/core/Stack';
 import {Heading, Text} from '@astryxdesign/core/Text';
 
 import {distributeIntoColumns, useColumnCount} from '../columns';
@@ -93,15 +94,17 @@ export function DayView({day, date, now, store}: DayViewProps) {
       </Section>
 
       <Section variant="transparent" padding={4}>
-        <Stack direction="horizontal" gap={3} vAlign="start">
+        {/* One grid row whose cells are whole columns, so every column gets the
+            same width. A horizontal stack would size each column from its
+            contents first, which made a column holding a long title wider than
+            the rest. */}
+        <Grid columns={columns.length} gap={3} align="start">
           {columns.map((columnEntries, columnIndex) => (
-            <StackItem key={columnIndex} size="fill">
-              <Stack direction="vertical" gap={3}>
-                {columnEntries.map((entry) => renderCard(entry))}
-              </Stack>
-            </StackItem>
+            <Stack key={columnIndex} direction="vertical" gap={3}>
+              {columnEntries.map((entry) => renderCard(entry))}
+            </Stack>
           ))}
-        </Stack>
+        </Grid>
       </Section>
     </>
   );

@@ -20,6 +20,12 @@ export type AuthState = {
   /** The email of the signed in user, or null when nobody is signed in. */
   email: string | null;
   /**
+   * Photo of the signed in user, when their sign in method provides one. Google
+   * copies the profile picture into the user metadata; a password account has
+   * none, which is what tells the two apart in the header.
+   */
+  avatarUrl: string | null;
+  /**
    * Whether the signed in user is on the editors list. False while signed out,
    * and false for a signed in user the database does not recognise as an editor.
    */
@@ -33,6 +39,28 @@ export type AuthState = {
   /** Sign the editor out. */
   signOut: () => Promise<void>;
 };
+
+/** The user fields this app reads, as Supabase returns them. */
+type SessionUser = {
+  email?: string;
+  user_metadata?: Record<string, unknown>;
+};
+
+/**
+ * Read the profile picture out of the user metadata.
+ *
+ * Providers name the field differently: Google fills `avatar_url` and also
+ * `picture`, others fill only one of them. Both spellings are accepted, and a
+ * password account simply has neither.
+ *
+ * @param user User from the session, or null.
+ * @returns The photo URL, or null when the sign in method gave none.
+ */
+function readAvatarUrl(user: SessionUser | null): string | null {
+  const metadata = user?.user_metadata ?? {};
+  const candidate = metadata.avatar_url ?? metadata.picture;
+  return typeof candidate === 'string' && candidate !== '' ? candidate : null;
+}
 
 /**
  * Ask the database whether the signed in user may edit.
@@ -68,6 +96,7 @@ async function checkIsEditor(): Promise<boolean> {
  */
 export function useAuth(): AuthState {
   const [email, setEmail] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
 
@@ -84,7 +113,9 @@ export function useAuth(): AuthState {
       if (!isActive) {
         return;
       }
-      setEmail(data.session?.user.email ?? null);
+      const user = (data.session?.user ?? null) as SessionUser | null;
+      setEmail(user?.email ?? null);
+      setAvatarUrl(readAvatarUrl(user));
       await refreshEditorRight();
       if (isActive) {
         setIsChecking(false);
@@ -92,7 +123,9 @@ export function useAuth(): AuthState {
     });
 
     const {data: subscription} = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user.email ?? null);
+      const user = (session?.user ?? null) as SessionUser | null;
+      setEmail(user?.email ?? null);
+      setAvatarUrl(readAvatarUrl(user));
       void refreshEditorRight();
     });
 
@@ -125,8 +158,9 @@ export function useAuth(): AuthState {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    setAvatarUrl(null);
     setCanEdit(false);
   }, []);
 
-  return {email, canEdit, isChecking, signIn, signInWithGoogle, signOut};
+  return {email, avatarUrl, canEdit, isChecking, signIn, signInWithGoogle, signOut};
 }

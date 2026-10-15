@@ -1,5 +1,6 @@
 import {Suspense, lazy, useMemo, useState} from 'react';
 
+import {Avatar} from '@astryxdesign/core/Avatar';
 import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
 import {Icon} from '@astryxdesign/core/Icon';
@@ -7,7 +8,7 @@ import {Stack} from '@astryxdesign/core/Layout';
 import {SegmentedControl, SegmentedControlItem} from '@astryxdesign/core/SegmentedControl';
 import {Section} from '@astryxdesign/core/Section';
 import {Heading, Text} from '@astryxdesign/core/Text';
-import {Moon, Sun} from 'lucide-react';
+import {CircleHelp, Moon, Sun} from 'lucide-react';
 
 import {DayView} from '../../components/DayView';
 import {MonthView} from '../../components/MonthView';
@@ -54,7 +55,7 @@ type SchedulePageProps = {
 export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
   const markStore = useMemo(() => createMarkStore(), []);
   const {week, isLoading, error, reload} = useSchedule();
-  const {email, canEdit, signIn, signInWithGoogle, signOut} = useAuth();
+  const {email, avatarUrl, canEdit, signIn, signInWithGoogle, signOut} = useAuth();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [view, setView] = useState<View>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -102,16 +103,31 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
                   </Text>
                 ) : null}
 
+                {/* The signed in identity is one control: the avatar carries the
+                    person, and pressing it signs out. A Google account brings
+                    its photo; a password account has none, so the avatar falls
+                    back to its default figure and the email is spelled out,
+                    which is the only case where the address is worth showing. */}
                 {email ? (
-                  <Button
-                    label={`Выйти (${email})`}
-                    variant="ghost"
-                    onClick={() => void signOut()}
-                  />
+                  <Stack direction="horizontal" gap={2} vAlign="center">
+                    <Avatar
+                      src={avatarUrl ?? undefined}
+                      name={avatarUrl ? email : undefined}
+                      size="sm"
+                      tooltip={`Выйти: ${email}`}
+                      onClick={() => void signOut()}
+                    />
+                    {avatarUrl ? null : (
+                      <Text type="supporting" color="secondary">
+                        {email}
+                      </Text>
+                    )}
+                  </Stack>
                 ) : (
                   <Button
                     label="Войти"
                     variant="ghost"
+                    icon={<Icon icon={CircleHelp} size="sm" />}
                     onClick={() => setIsSignInOpen(true)}
                   />
                 )}

@@ -7,6 +7,8 @@ import {Layout, LayoutContent, LayoutFooter, Stack} from '@astryxdesign/core/Lay
 import {Text} from '@astryxdesign/core/Text';
 import {TextInput} from '@astryxdesign/core/TextInput';
 
+import {GoogleMark} from './GoogleMark';
+
 type SignInDialogProps = {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -94,6 +96,7 @@ export function SignInDialog({
               <Button
                 label="Войти через Google"
                 variant="secondary"
+                icon={<GoogleMark />}
                 isDisabled={isSubmitting}
                 onClick={() => void handleGoogle()}
               />

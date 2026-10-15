@@ -1,5 +1,4 @@
 import {Stack} from '@astryxdesign/core/Layout';
-import {Text} from '@astryxdesign/core/Text';
 import type {ReactNode} from 'react';
 
 import type {DayAward} from '../rewards';
@@ -42,6 +41,10 @@ const KIND_BY_VALUE: Record<number, AwardKind> = {
  * replaces that row with the single wreath, because at that point the day has
  * nothing left to earn and a row of small stars would say less.
  *
+ * The panel says nothing in words. A row of stars and a wreath are read on sight,
+ * and a caption beside them only repeats the picture; the name lives in the
+ * `aria-label` instead, where a screen reader needs it and the eye does not.
+ *
  * @param props What the day earned and which day it is.
  * @returns The award panel.
  */
@@ -57,12 +60,7 @@ export function AwardPanel({award, dayKey}: AwardPanelProps): ReactNode {
   return (
     <Stack direction="horizontal" gap={3} vAlign="center" aria-label={`Награда: ${hint}`}>
       {award.hasHighest ? (
-        <Stack direction="horizontal" gap={2} vAlign="center">
-          <AwardStar kind="highest" size={HIGHEST_STAR_SIZE} />
-          <Text type="supporting" color="secondary">
-            высшая награда
-          </Text>
-        </Stack>
+        <AwardStar kind="highest" size={HIGHEST_STAR_SIZE} />
       ) : (
         <Stack direction="horizontal" gap={1} vAlign="center">
           {award.stars.map((star, index) => (

@@ -94,12 +94,18 @@ export function useColumnCount(): number {
  * Spread items across columns, filling each column to its end before starting
  * the next, so reading order runs down a column and then continues in the next.
  *
+ * The width decides how many columns fit, but a column is only used when the
+ * items can fill it fairly: seven segments across three columns would come out
+ * as three, three and one, which leaves a column that looks broken. In that case
+ * the count drops until the columns are balanced, so seven segments take two
+ * columns of four and three instead.
+ *
  * With fewer items than columns the later columns stay empty rather than
  * receiving a share, which keeps the reading order stable as the list grows.
  *
  * @param items Items in reading order.
- * @param columnCount Number of columns to spread them across.
- * @returns One array of items per column.
+ * @param columnCount Number of columns the width could fit.
+ * @returns One array of items per column actually used.
  */
 export function distributeIntoColumns<Item>(
   items: readonly Item[],
@@ -109,7 +115,19 @@ export function distributeIntoColumns<Item>(
     return [[...items]];
   }
 
-  const itemsPerColumn = Math.ceil(items.length / columnCount);
+  // A column is worth using only when it receives at least half of what the
+  // fullest one gets, so a nearly empty trailing column is avoided.
+  let usedColumns = Math.min(columnCount, items.length);
+  while (usedColumns > 1) {
+    const itemsPerColumn = Math.ceil(items.length / usedColumns);
+    const lastColumnSize = items.length - itemsPerColumn * (usedColumns - 1);
+    if (lastColumnSize >= itemsPerColumn / 2) {
+      break;
+    }
+    usedColumns -= 1;
+  }
+
+  const itemsPerColumn = Math.ceil(items.length / usedColumns);
   const columns: Item[][] = [];
 
   for (let start = 0; start < items.length; start += itemsPerColumn) {

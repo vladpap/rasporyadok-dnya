@@ -323,6 +323,41 @@ for (const {width, expectedColumns} of WIDTH_CASES) {
   console.log(`Ширина ${width}: колонок ${columns.length}, все отрезки на месте`);
 }
 
+// Sunday carries only seven segments, so three columns would come out as three,
+// three and one and leave a column that looks broken. The split must drop to two
+// balanced columns instead of using every column the width allows.
+const sundayHost = await mountApp(1500);
+const sundayWeekRadio = sundayHost.querySelector<HTMLElement>('[role="radio"][data-value="week"]');
+if (!sundayWeekRadio) {
+  fail(['Не найден переключатель недели для проверки воскресенья']);
+}
+sundayWeekRadio.click();
+await settle();
+
+const sundayCard = [
+  ...sundayHost.querySelectorAll<HTMLElement>('.astryx-clickable-card'),
+].find((card) => (card.textContent ?? '').includes('Вс'));
+
+if (!sundayCard) {
+  fail(['Не найдена карточка воскресенья в неделе']);
+}
+sundayCard.click();
+await settle();
+
+const sundayColumns = readColumns(sundayHost);
+const sundaySizes = sundayColumns.map((column) => column.querySelectorAll('.astryx-card').length);
+const smallestSundayColumn = Math.min(...sundaySizes);
+
+if (sundayColumns.length !== 2) {
+  fail([`Воскресенье разложено на ${sundayColumns.length} колонки, ожидалось 2`]);
+}
+if (smallestSundayColumn < 3) {
+  fail([
+    `Воскресенье: размеры колонок ${sundaySizes.join(',')}, ожидались ровные без почти пустой`,
+  ]);
+}
+console.log(`Воскресенье: колонки ${sundaySizes.join(' и ')}, пустой колонки нет`);
+
 // The week view sums the whole week in its header. The marked day is a weekday
 // inside October 2026, so the week and the month both run over five tracked
 // weekdays plus Saturday and Sunday: 5 * 7 + 3 + 3 = 41 countable segments.

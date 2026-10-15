@@ -110,8 +110,13 @@ function themeParts(key: ThemeKey) {
       },
       badge: {
         'variant:accent': {
-          backgroundColor: ACCENT_FILL,
-          color: 'var(--color-text-primary)',
+          // The badge is a solid accent rather than the mixed fill the accent
+          // card uses: the running badge sits on a card that may itself be accent
+          // coloured, and two surfaces of the same mixture came out identical, so
+          // the badge disappeared exactly when the card was marked. A solid accent
+          // stands out on both the plain card and the accent one.
+          backgroundColor: 'var(--color-accent)',
+          color: 'var(--color-on-accent)',
         },
       },
       icon: {

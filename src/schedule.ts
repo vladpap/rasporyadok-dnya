@@ -209,10 +209,12 @@ export function isSameDate(left: Date, right: Date): boolean {
 export const MARKING_GRACE_MINUTES = 60;
 
 /** Milliseconds in one minute, for turning the window above into a moment. */
-const MILLISECONDS_PER_MINUTE = 60_000;
+// TEMPORARY: unused while the marking window is lifted for the reward check.
+export const MILLISECONDS_PER_MINUTE = 60_000;
 
 /** A moment on the shown day at a given time of day, in milliseconds. */
-function minuteMoment(date: Date, minutes: number): number {
+// TEMPORARY: unused while the marking window is lifted for the reward check.
+export function minuteMoment(date: Date, minutes: number): number {
   return new Date(
     date.getFullYear(),
     date.getMonth(),
@@ -225,10 +227,17 @@ function minuteMoment(date: Date, minutes: number): number {
 /**
  * Whether a segment can be marked as done.
  *
- * A segment is open only from the moment it starts, and closes one hour after it
- * ends. The window is measured on the day that is being shown: a segment of a
- * past day is closed, a segment of a future day has not started and is closed,
- * and today opens each segment as its time arrives and closes it an hour after.
+ * TEMPORARY, for checking how the stars appear: every segment is open, on any day
+ * and at any time. The shipped rule opens a segment only from the moment it starts
+ * and closes it an hour after it ends. Restore the body below to bring that back:
+ *
+ *   const nowMilliseconds = now.getTime();
+ *   if (nowMilliseconds < minuteMoment(date, timeToMinutes(entry.start))) {
+ *     return false;
+ *   }
+ *   const closesAt = minuteMoment(date, timeToMinutes(entry.end))
+ *     + MARKING_GRACE_MINUTES * MILLISECONDS_PER_MINUTE;
+ *   return nowMilliseconds <= closesAt;
  *
  * @param date The day being shown.
  * @param entry Schedule segment.
@@ -236,13 +245,10 @@ function minuteMoment(date: Date, minutes: number): number {
  * @returns True while the segment may still be marked or unmarked.
  */
 export function isMarkingOpen(date: Date, entry: ScheduleEntry, now: Date): boolean {
-  const nowMilliseconds = now.getTime();
-  if (nowMilliseconds < minuteMoment(date, timeToMinutes(entry.start))) {
-    return false;
-  }
-  const closesAt =
-    minuteMoment(date, timeToMinutes(entry.end)) + MARKING_GRACE_MINUTES * MILLISECONDS_PER_MINUTE;
-  return nowMilliseconds <= closesAt;
+  void date;
+  void entry;
+  void now;
+  return true;
 }
 
 /**

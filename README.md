@@ -104,6 +104,18 @@ the mark and its accessible name states the segment and whether it is marked, so
 there is no second checkbox to tab to. The card icon is centred against the card,
 so a three-line segment and a one-line segment look deliberate next to each other.
 
+### The marking window
+
+A segment can be marked or unmarked for one hour after it ends, and the window is
+measured on the day being shown: a future day is open, a past day is closed, and
+today closes segment by segment. `MARKING_GRACE_MINUTES` in `src/schedule.ts` holds
+that hour, and `isMarkingOpen()` decides it.
+
+Once the window closes the card becomes a plain card: it stops being clickable, it
+turns muted, and it keeps the mark it already earned rather than losing it. The day
+header states the rule in one line, so a card that does not respond is explained
+where the person is looking.
+
 ### Where marks are stored
 
 `src/marks.ts` defines a `MarkStore` interface, and `createMarkStore()` returns
@@ -178,7 +190,9 @@ every segment of the shown day renders as a card, that the columns read downward
 with the earliest segment in the first column, clicks the running card and
 verifies that the mark appears, that the day progress moves and that the mark is
 stored under that calendar day, switches the colour mode and verifies that the
-choice is stored, then renders the page at 600, 1280 and 1500 pixels wide and
-checks that it gives one, two and three columns with every segment present. Set
-`SMOKE_DUMP=/tmp/page.html` to write the rendered markup and the theme's injected
-styles for inspection.
+choice is stored, renders the page at 600, 1280 and 1500 pixels wide and checks
+that it gives one, two and three columns with every segment present, and finally
+moves the clock to 13:30 to check that the morning segments closed their marking
+window, that a closed card is not clickable and that a mark taken earlier survived.
+Set `SMOKE_DUMP=/tmp/page.html` to write the rendered markup and the theme's
+injected styles for inspection.

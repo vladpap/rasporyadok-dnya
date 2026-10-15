@@ -233,6 +233,40 @@ export function isSameDate(left: Date, right: Date): boolean {
 }
 
 /**
+ * How long a segment stays open for marking after it ends, in minutes.
+ * Past this window the segment is closed: it can no longer be marked as done.
+ */
+export const MARKING_GRACE_MINUTES = 60;
+
+/** Milliseconds in one minute, for turning the window above into a moment. */
+const MILLISECONDS_PER_MINUTE = 60_000;
+
+/**
+ * Whether a segment can still be marked as done.
+ *
+ * The window closes one hour after the segment ends, measured on the day that is
+ * being shown, so a segment of a future day is open, a segment of a past day is
+ * closed, and today closes segment by segment as the day goes on.
+ *
+ * @param date The day being shown.
+ * @param entry Schedule segment.
+ * @param now The current moment.
+ * @returns True while the segment may still be marked or unmarked.
+ */
+export function isMarkingOpen(date: Date, entry: ScheduleEntry, now: Date): boolean {
+  const endMinutes = timeToMinutes(entry.end);
+  const endMoment = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    Math.floor(endMinutes / 60),
+    endMinutes % 60,
+  );
+  const closesAt = endMoment.getTime() + MARKING_GRACE_MINUTES * MILLISECONDS_PER_MINUTE;
+  return now.getTime() <= closesAt;
+}
+
+/**
  * Russian title of a day, for example `вторник, 14 октября`.
  *
  * @param date Any date.

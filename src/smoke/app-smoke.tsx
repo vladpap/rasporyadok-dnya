@@ -21,7 +21,7 @@ import {createRoot} from 'react-dom/client';
 
 import scheduleDocument from '../../data/schedule.json';
 import {App} from '../App';
-import {setSimulatedWidth} from './dom';
+import {resetSimulatedNow, setSimulatedNow, setSimulatedWidth} from './dom';
 
 /** How long to let React finish mounting, loading marks and re-rendering. */
 const SETTLE_MS = 100;
@@ -296,6 +296,41 @@ for (const {width, expectedColumns} of WIDTH_CASES) {
   }
   console.log(`Ширина ${width}: колонок ${columns.length}, все отрезки на месте`);
 }
+
+// A segment closes an hour after it ends, so later in the same day the morning
+// segments can no longer be marked. At 13:30 two of the seven have closed, and
+// the one marked earlier keeps its mark without staying changeable.
+setSimulatedNow('2026-10-14T13:30:00');
+const lateHost = await mountApp(MAIN_WIDTH);
+const lateClickableCount = lateHost.innerHTML.split('astryx-clickable-card').length - 1;
+const closedCardButton = lateHost.querySelector<HTMLButtonElement>(
+  `button[aria-label^="${CLICKED_SEGMENT}"]`,
+);
+const lockProblems: string[] = [];
+
+if (lateClickableCount !== EXPECTED_TRACKED_COUNT - 2) {
+  lockProblems.push(
+    `В 13:30 кликабельных карточек ${lateClickableCount}, ожидалось ${EXPECTED_TRACKED_COUNT - 2}`,
+  );
+}
+if (closedCardButton) {
+  lockProblems.push(`Закрытый отрезок остался кликабельным: ${CLICKED_SEGMENT}`);
+}
+if (!lateHost.querySelector('[aria-label="отмечено"]')) {
+  lockProblems.push('Отметка, поставленная до закрытия окна, пропала');
+}
+if (!lateHost.innerHTML.includes('в течение часа после его окончания')) {
+  lockProblems.push('На странице нет пояснения про окно отметки');
+}
+
+if (lockProblems.length > 0) {
+  fail(lockProblems);
+}
+
+console.log(
+  `Окно отметки: в 13:30 закрыто 2 отрезка из ${EXPECTED_TRACKED_COUNT}, отметка сохранилась, карточка не кликабельна`,
+);
+resetSimulatedNow();
 
 console.log('Все проверки пройдены');
 

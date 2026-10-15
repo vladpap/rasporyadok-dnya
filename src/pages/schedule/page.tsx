@@ -11,7 +11,7 @@ import {Moon, Sun} from 'lucide-react';
 import {DayView} from '../../components/DayView';
 import {WeekView} from '../../components/WeekView';
 import {createMarkStore} from '../../marks';
-import {dayKeyForDate, getScheduleDay, isSameDate, minutesOfDate, startOfWeek} from '../../schedule';
+import {dayKeyForDate, getScheduleDay, isSameDate, startOfWeek} from '../../schedule';
 import type {ThemeMode} from '../../themeMode';
 import {useCurrentTime} from '../../useCurrentTime';
 
@@ -44,7 +44,6 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
 
   const isShowingToday = isSameDate(selectedDate, now);
   const day = getScheduleDay(dayKeyForDate(selectedDate));
-  const nowMinutes = isShowingToday ? minutesOfDate(now) : null;
 
   return (
     <Layout height="fill">
@@ -98,7 +97,7 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
 
       <LayoutContent padding={0} role="main">
         {view === 'day' ? (
-          <DayView day={day} date={selectedDate} nowMinutes={nowMinutes} store={markStore} />
+          <DayView day={day} date={selectedDate} now={now} store={markStore} />
         ) : (
           <WeekView
             weekStart={startOfWeek(selectedDate)}

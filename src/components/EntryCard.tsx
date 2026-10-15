@@ -15,28 +15,40 @@ type EntryCardProps = {
   isRunningNow: boolean;
   /** Whether the segment already finished. */
   hasPassed: boolean;
+  /** Whether the segment may still be marked, or unmarked. */
+  canMark: boolean;
   onToggle: (entryId: string) => void;
 };
 
 /**
  * One segment of the day as a card.
  *
- * Segments that carry a mark are clickable: the whole card toggles the mark, so
- * the card is the single control and there is no second checkbox to tab to.
- * Segments without a mark (breaks, meals, sleep) are plain cards.
+ * Segments that carry a mark are clickable while their marking window is open:
+ * the whole card toggles the mark, so the card is the single control and there
+ * is no second checkbox to tab to. Once the window closed, the card turns into a
+ * plain card that still shows the mark it earned, and simply cannot be changed.
  *
  * The card look carries the state: a marked segment is accent coloured with a
- * check, a finished or service segment is muted, and everything still ahead
- * uses the standard card surface. The running segment also carries a badge, so
- * the state never rests on colour alone.
+ * check, a finished, closed or service segment is muted, and everything still
+ * ahead uses the standard card surface. The running segment also carries a badge,
+ * so the state never rests on colour alone.
  *
  * @param props Segment with its state and the toggle handler.
  * @returns A schedule card.
  */
-export function EntryCard({entry, isDone, isRunningNow, hasPassed, onToggle}: EntryCardProps) {
+export function EntryCard({
+  entry,
+  isDone,
+  isRunningNow,
+  hasPassed,
+  canMark,
+  onToggle,
+}: EntryCardProps) {
   const SegmentIcon = resolveIcon(entry.icon);
 
-  const variant = isDone ? 'purple' : hasPassed || !entry.tracked ? 'muted' : 'default';
+  const isInteractive = entry.tracked && canMark;
+  const isMuted = hasPassed || !entry.tracked || !canMark;
+  const variant = isDone ? 'purple' : isMuted ? 'muted' : 'default';
 
   const content = (
     <Stack direction="horizontal" gap={3} vAlign="center">
@@ -59,7 +71,7 @@ export function EntryCard({entry, isDone, isRunningNow, hasPassed, onToggle}: En
     </Stack>
   );
 
-  if (!entry.tracked) {
+  if (!isInteractive) {
     return (
       <Card variant={variant} elevation="low" padding={5}>
         {content}

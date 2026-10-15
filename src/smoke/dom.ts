@@ -15,7 +15,7 @@
 import {JSDOM} from 'jsdom';
 
 /** Moment the smoke test pretends it is, in local time. */
-const FIXED_NOW = '2026-10-14T09:30:00';
+const DEFAULT_FIXED_NOW = '2026-10-14T09:30:00';
 
 /** Viewport width used until the test asks for another one. */
 const DEFAULT_SIMULATED_WIDTH = 1280;
@@ -28,6 +28,7 @@ const dom = new JSDOM('<!doctype html><html><body></body></html>', {
 const browserWindow = dom.window as unknown as Window & typeof globalThis;
 
 let simulatedWidth = DEFAULT_SIMULATED_WIDTH;
+let simulatedNow = DEFAULT_FIXED_NOW;
 
 /**
  * Simulate a viewport width for the width media queries.
@@ -36,6 +37,22 @@ let simulatedWidth = DEFAULT_SIMULATED_WIDTH;
  */
 export function setSimulatedWidth(width: number): void {
   simulatedWidth = width;
+}
+
+/**
+ * Move the frozen clock, so the test can see the page at another time of day.
+ *
+ * @param localMoment Moment in local time, for example `2026-10-14T13:30:00`.
+ */
+export function setSimulatedNow(localMoment: string): void {
+  simulatedNow = localMoment;
+}
+
+/**
+ * Put the clock back to the moment most checks run at.
+ */
+export function resetSimulatedNow(): void {
+  simulatedNow = DEFAULT_FIXED_NOW;
 }
 
 /** Width pattern inside a media query, for example `min-width: 900px`. */
@@ -90,14 +107,14 @@ globalThis.IntersectionObserver = ObserverStub as unknown as typeof Intersection
 class FixedDate extends Date {
   constructor(...args: unknown[]) {
     if (args.length === 0) {
-      super(FIXED_NOW);
+      super(simulatedNow);
       return;
     }
     super(...(args as [string | number | Date]));
   }
 
   static override now(): number {
-    return new Date(FIXED_NOW).getTime();
+    return new Date(simulatedNow).getTime();
   }
 }
 

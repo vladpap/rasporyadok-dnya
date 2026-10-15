@@ -1,11 +1,21 @@
 import {Badge} from '@astryxdesign/core/Badge';
-import {Stack, StackItem} from '@astryxdesign/core/Stack';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
 import {Section} from '@astryxdesign/core/Section';
-import {Heading} from '@astryxdesign/core/Text';
+import {Stack, StackItem} from '@astryxdesign/core/Stack';
+import {Heading, Text} from '@astryxdesign/core/Text';
 
 import {distributeIntoColumns, useColumnCount} from '../columns';
-import {countProgress, dateKey, entryPhase, formatDayTitle, type ScheduleDay} from '../schedule';
+import {
+  countProgress,
+  dateKey,
+  entryPhase,
+  formatDayTitle,
+  isMarkingOpen,
+  isSameDate,
+  minutesOfDate,
+  type ScheduleDay,
+  type ScheduleEntry,
+} from '../schedule';
 import type {MarkStore} from '../marks';
 import {useDayMarks} from '../useMarks';
 import {EntryCard} from './EntryCard';
@@ -13,8 +23,8 @@ import {EntryCard} from './EntryCard';
 type DayViewProps = {
   day: ScheduleDay;
   date: Date;
-  /** Minutes from midnight, or null when the shown day is not today. */
-  nowMinutes: number | null;
+  /** The current moment. */
+  now: Date;
   store: MarkStore;
 };
 
@@ -27,18 +37,23 @@ const PROGRESS_FLOOR = 1;
  * order.
  *
  * The cards read down a column and continue in the next one, so the sequence
- * follows the clock rather than jumping across rows.
+ * follows the clock rather than jumping across rows. A segment can be marked
+ * only while its window is open, which the card itself enforces by not being
+ * clickable once that window has closed.
  *
  * @param props Day to show, the clock, and the mark storage.
  * @returns The day view.
  */
-export function DayView({day, date, nowMinutes, store}: DayViewProps) {
+export function DayView({day, date, now, store}: DayViewProps) {
   const {doneIds, toggle} = useDayMarks(dateKey(date), store);
   const {done, total} = countProgress(day.entries, doneIds);
   const isDayFinished = total > 0 && done === total;
   const columns = distributeIntoColumns(day.entries, useColumnCount());
 
-  const renderCard = (entry: ScheduleDay['entries'][number]) => {
+  // Times only mean "passed" or "running" on the day that is actually today.
+  const nowMinutes = isSameDate(date, now) ? minutesOfDate(now) : null;
+
+  const renderCard = (entry: ScheduleEntry) => {
     const phase = entryPhase(entry, nowMinutes);
     return (
       <EntryCard
@@ -47,6 +62,7 @@ export function DayView({day, date, nowMinutes, store}: DayViewProps) {
         isDone={doneIds.has(entry.id)}
         isRunningNow={phase === 'current'}
         hasPassed={phase === 'past'}
+        canMark={isMarkingOpen(date, entry, now)}
         onToggle={toggle}
       />
     );
@@ -70,6 +86,9 @@ export function DayView({day, date, nowMinutes, store}: DayViewProps) {
             hasValueLabel
             formatValueLabel={(value, maximum) => `${value} из ${maximum}`}
           />
+          <Text type="supporting" color="secondary">
+            Отметить отрезок можно в течение часа после его окончания — потом карточка закрывается.
+          </Text>
         </Stack>
       </Section>
 

@@ -44,22 +44,58 @@ export type AuthState = {
 type SessionUser = {
   email?: string;
   user_metadata?: Record<string, unknown>;
+  identities?: Array<{identity_data?: Record<string, unknown>}>;
 };
 
+/** Metadata fields that carry a profile picture, in the order they are checked. */
+const AVATAR_FIELDS = ['avatar_url', 'picture'] as const;
+
 /**
- * Read the profile picture out of the user metadata.
+ * Read the first picture URL out of one metadata object.
  *
- * Providers name the field differently: Google fills `avatar_url` and also
- * `picture`, others fill only one of them. Both spellings are accepted, and a
- * password account simply has neither.
+ * @param metadata Metadata object to look in.
+ * @returns The URL, or null when the object holds none.
+ */
+function findPicture(metadata: Record<string, unknown> | undefined): string | null {
+  if (!metadata) {
+    return null;
+  }
+  for (const field of AVATAR_FIELDS) {
+    const candidate = metadata[field];
+    if (typeof candidate === 'string' && candidate !== '') {
+      return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * Read the profile picture of a signed in user.
+ *
+ * The picture is not always where it is expected: Supabase copies the provider
+ * profile into `user_metadata`, but an account may carry it only under its
+ * identity data instead, which is why both are searched. A password account has
+ * neither, and a Google account without a picture has neither, so the two cases
+ * where the avatar falls back to its default figure are told apart by the email
+ * beside it.
  *
  * @param user User from the session, or null.
- * @returns The photo URL, or null when the sign in method gave none.
+ * @returns The photo URL, or null when the account has none.
  */
 function readAvatarUrl(user: SessionUser | null): string | null {
-  const metadata = user?.user_metadata ?? {};
-  const candidate = metadata.avatar_url ?? metadata.picture;
-  return typeof candidate === 'string' && candidate !== '' ? candidate : null;
+  const fromMetadata = findPicture(user?.user_metadata);
+  if (fromMetadata) {
+    return fromMetadata;
+  }
+
+  for (const identity of user?.identities ?? []) {
+    const fromIdentity = findPicture(identity.identity_data);
+    if (fromIdentity) {
+      return fromIdentity;
+    }
+  }
+
+  return null;
 }
 
 /**

@@ -67,7 +67,12 @@ export function EntryCard({
 
   const content = (
     <Stack direction="horizontal" gap={3} vAlign="center">
-      <Icon icon={SegmentIcon} size="lg" />
+      {/* The segment icon carries the theme accent. The card surfaces in dark
+          mode are near black, where a tint of the accent cannot be told apart
+          from another theme, so the icon is the large coloured shape that makes
+          the chosen theme visible there. A finished segment keeps its accent
+          icon, which is why the colour does not depend on the card state. */}
+      <Icon icon={SegmentIcon} size="lg" color="accent" />
       <StackItem size="fill">
         <Stack direction="vertical" gap={1}>
           <Stack direction="horizontal" gap={2} vAlign="center" wrap="wrap">

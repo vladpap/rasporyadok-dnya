@@ -3,8 +3,9 @@ import {IconButton} from '@astryxdesign/core/IconButton';
 import {Popover} from '@astryxdesign/core/Popover';
 import {RadioList, RadioListItem} from '@astryxdesign/core/RadioList';
 import {Settings} from 'lucide-react';
+import {useState} from 'react';
 
-import {THEME_KEYS, getThemeAccent, getThemeLabel, type ThemeKey} from '../themes';
+import {THEME_KEYS, getThemeLabel, type ThemeKey} from '../themes';
 
 type ThemePickerProps = {
   /** The active theme. */
@@ -13,23 +14,25 @@ type ThemePickerProps = {
   onChange: (key: ThemeKey) => void;
 };
 
-/** Diameter of a colour swatch shown beside a theme name, in pixels. */
-const SWATCH_SIZE = 18;
-
 /**
  * The colour theme picker, opened from a gear beside the light and dark switch.
  *
  * The choices are a radio group rather than a row of buttons, because this is one
  * choice out of five and the group already carries that meaning for a screen
- * reader and for the keyboard. Each option shows a swatch of its own accent next
- * to its name, so the picker answers "what will change" before the name is read.
+ * reader and for the keyboard. The list is named by the colour of each theme, and
+ * picking one closes the popover: the change is visible at once behind it, so
+ * leaving it open would only make the person close it themselves.
  *
  * @param props The active theme and the way to change it.
  * @returns The picker.
  */
 export function ThemePicker({themeKey, onChange}: ThemePickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <Popover
+      isOpen={isOpen}
+      onOpenChange={setIsOpen}
       placement="below"
       alignment="end"
       label="Цвет темы"
@@ -38,25 +41,13 @@ export function ThemePicker({themeKey, onChange}: ThemePickerProps) {
         <RadioList
           label="Цвет темы"
           value={themeKey}
-          onChange={(value) => onChange(value as ThemeKey)}
+          onChange={(value) => {
+            onChange(value as ThemeKey);
+            setIsOpen(false);
+          }}
         >
           {THEME_KEYS.map((key) => (
-            <RadioListItem
-              key={key}
-              label={getThemeLabel(key)}
-              value={key}
-              startContent={
-                <svg
-                  width={SWATCH_SIZE}
-                  height={SWATCH_SIZE}
-                  viewBox="0 0 18 18"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <circle cx="9" cy="9" r="8" fill={getThemeAccent(key)} />
-                </svg>
-              }
-            />
+            <RadioListItem key={key} label={getThemeLabel(key)} value={key} />
           ))}
         </RadioList>
       }

@@ -56,6 +56,17 @@ const ACCENT_PAIRS: Record<ThemeKey, string> = {
 };
 
 /**
+ * The fill of the `accent` card and badge: the theme accent mixed into the card
+ * background, so the surface reads as the chosen colour instead of staying pale.
+ *
+ * The share is a constant because one value has to serve both modes: the accent
+ * is dark in light mode and light in dark mode, and the text on top is the body
+ * text. Two fifths is the strongest share that keeps that text above the contrast
+ * a reader needs in dark mode, where the mixture comes out lightest.
+ */
+const ACCENT_FILL = 'color-mix(in srgb, var(--color-accent) 40%, var(--color-background-card))';
+
+/**
  * The icon scale, the progress bar and the accent card need the same treatment in
  * every theme.
  *
@@ -88,14 +99,19 @@ function themeParts(key: ThemeKey) {
       },
       card: {
         'variant:accent': {
-          backgroundColor: 'var(--color-accent-muted)',
+          // The accent mixed into the card, at a share strong enough to read as
+          // the theme colour. The built `--color-accent-muted` mixes only a fifth
+          // of the accent, which came out too pale to tell one theme from another.
+          // Two fifths is the strongest that still leaves the body text above the
+          // contrast a reader needs in dark mode, where the fill comes out lightest.
+          backgroundColor: ACCENT_FILL,
           borderColor: 'var(--color-border-emphasized)',
         },
       },
       badge: {
         'variant:accent': {
-          backgroundColor: 'var(--color-accent-muted)',
-          color: 'var(--color-text-accent)',
+          backgroundColor: ACCENT_FILL,
+          color: 'var(--color-text-primary)',
         },
       },
       icon: {

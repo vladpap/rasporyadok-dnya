@@ -40,10 +40,10 @@ const CARD_HEIGHT = 148;
  * `:not(#\#)` chains and set both padding and a minimum width, which beats any
  * rule a theme can write. Leading and trailing spaces in the label are what is
  * left, and they have to be non-breaking: an ordinary space at the edge of a
- * label is collapsed away by the renderer and changes nothing. Five to a side make
- * the pill about three times as wide as the word alone.
+ * label is collapsed away by the renderer and changes nothing. Eight to a side
+ * make the pill about twice as wide as the word with the default padding.
  */
-const PADDING = '\u00A0\u00A0\u00A0\u00A0\u00A0';
+const PADDING = '\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0';
 
 /**
  * One segment of the day as a card.

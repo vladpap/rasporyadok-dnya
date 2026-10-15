@@ -32,6 +32,35 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY
   ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnbGZndnR6bHJqcWpoamZ5eW96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5NjkzMDcsImV4cCI6MjEwNzU0NTMwN30.aik9SGUaZDYhttT1obgdI1EqREenuPqpnSe_3Lr4lkI';
 
 /**
+ * A WebSocket stand-in that never connects.
+ *
+ * `createClient` builds a Realtime client eagerly, which picks a WebSocket
+ * constructor and throws on Node 20 because it has none. The importer never uses
+ * Realtime, so this is handed in as the transport to satisfy the constructor
+ * without touching the network. Every method is a no-op.
+ */
+class NoRealtimeTransport {
+  constructor() {
+    this.readyState = 3;
+    this.url = '';
+    this.protocol = '';
+    this.CONNECTING = 0;
+    this.OPEN = 1;
+    this.CLOSING = 2;
+    this.CLOSED = 3;
+    this.onopen = null;
+    this.onmessage = null;
+    this.onclose = null;
+    this.onerror = null;
+  }
+
+  close() {}
+  send() {}
+  addEventListener() {}
+  removeEventListener() {}
+}
+
+/**
  * Read the CSV source and turn it into schedule entries.
  *
  * The same validation the build used runs here, so a broken CSV cannot reach
@@ -87,7 +116,14 @@ async function main() {
     return;
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Realtime is disabled on purpose: creating a client builds a Realtime client
+  // that opens a WebSocket, and Node 20 has no native WebSocket, so the client
+  // would throw before the first request. The importer only needs REST and auth,
+  // which use fetch, so a transport that refuses to connect is enough.
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    realtime: { transport: NoRealtimeTransport },
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
 
   const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
   if (authError) {

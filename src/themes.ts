@@ -56,15 +56,21 @@ const ACCENT_PAIRS: Record<ThemeKey, string> = {
 };
 
 /**
- * The icon scale and the progress bar need the same treatment in every theme.
+ * The icon scale, the progress bar and the accent card need the same treatment in
+ * every theme.
  *
  * The icon scale stops at `lg` (1.5rem, 24px) and asks for size steps rather than
  * stray pixel values, so a quarter larger is a decision at the theme level.
  *
  * The progress bar reads the neutral theme's status accent, which stays blue even
  * after the accent seed re-seeds the rest of the ramp. Pointing it at the pair the
- * seed expands to is what makes the bars follow the chosen theme rather than the
- * inherited blue.
+ * seed expands to is what makes the bars follow the chosen theme.
+ *
+ * The card variants that ship with the theme are a fixed categorical palette, so
+ * `purple` stays purple under every accent. The `accent` variant added here is the
+ * one that follows the choice: the page header and the marks that are done use it,
+ * which is what makes the whole page change colour rather than only the marks that
+ * read the accent directly.
  *
  * @param key Which colour theme.
  * @returns The parts a theme shares with the others.
@@ -79,6 +85,18 @@ function themeParts(key: ThemeKey) {
     components: {
       'progress-bar': {
         'variant:accent': {'--color-accent': ACCENT_PAIRS[key]},
+      },
+      card: {
+        'variant:accent': {
+          backgroundColor: 'var(--color-accent-muted)',
+          borderColor: 'var(--color-border-emphasized)',
+        },
+      },
+      badge: {
+        'variant:accent': {
+          backgroundColor: 'var(--color-accent-muted)',
+          color: 'var(--color-text-accent)',
+        },
       },
       icon: {
         'size:lg': {

@@ -154,7 +154,7 @@ export function MonthView({
               <ClickableCard
                 key={dateKey(date)}
                 label={`${formatDayTitle(date)}: сделано ${done} из ${total}`}
-                variant={isToday ? 'purple' : belongsToMonth ? 'default' : 'transparent'}
+                variant={isToday ? 'accent' : belongsToMonth ? 'default' : 'transparent'}
                 elevation="low"
                 padding={1}
                 onClick={() => onOpenDay(date)}

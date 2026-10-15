@@ -101,7 +101,7 @@ export function WeekView({weekStart, week, today, store, onOpenDay}: WeekViewPro
       <ClickableCard
         key={dayKey}
         label={`${formatDayTitle(date)}: сделано ${done} из ${total}`}
-        variant={isSameDate(date, today) ? 'purple' : 'default'}
+        variant={isSameDate(date, today) ? 'accent' : 'default'}
         elevation="low"
         padding={2}
         onClick={() => onOpenDay(date)}

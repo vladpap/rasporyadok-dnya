@@ -63,7 +63,7 @@ export function EntryCard({
 
   const isInteractive = entry.tracked && canMark;
   const isMuted = hasPassed || !entry.tracked || !canMark;
-  const variant = isDone ? 'purple' : isMuted ? 'muted' : 'default';
+  const variant = isDone ? 'accent' : isMuted ? 'muted' : 'default';
 
   const content = (
     <Stack direction="horizontal" gap={3} vAlign="center">
@@ -74,7 +74,7 @@ export function EntryCard({
             <Text type="label" color="secondary">
               {formatTimeRange(entry)}
             </Text>
-            {isRunningNow && <Badge label="сейчас" variant="purple" />}
+            {isRunningNow && <Badge label="сейчас" variant="accent" />}
           </Stack>
           <Heading level={4}>{entry.title}</Heading>
           {entry.note ? (

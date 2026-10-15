@@ -83,7 +83,7 @@ export default function SchedulePage({
   const header = (
     <>
       <Section variant="section" padding={4}>
-        <Card variant="purple" elevation="low" padding={5}>
+        <Card variant="accent" elevation="low" padding={5}>
           <Stack direction="vertical" gap={4}>
             <Stack direction="horizontal" gap={4} vAlign="center" justify="between" wrap="wrap">
               <Heading level={1}>Распорядок дня</Heading>

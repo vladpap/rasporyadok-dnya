@@ -35,14 +35,22 @@ type WeekViewProps = {
 /** Minimum progress maximum, so a day without checkboxes still renders a bar. */
 const PROGRESS_FLOOR = 1;
 
-/** Ring diameter on a phone, where seven columns have little room. */
-const NARROW_RING_SIZE = 34;
+/** Ring diameter on a phone, where a card is narrower. */
+const NARROW_RING_SIZE = 40;
 
 /** Ring diameter everywhere else. */
 const RING_SIZE = 56;
 
-/** Height of one day card on a phone, where the ring is smaller. */
-const NARROW_CARD_HEIGHT = 104;
+/**
+ * Narrowest a day card may become before the row wraps.
+ *
+ * Two cards plus the page padding need roughly this much room to stay readable,
+ * so a phone shows two per row and a desktop still fits all seven.
+ */
+const PHONE_CARD_MIN_WIDTH = 150;
+
+/** Height of one day card on a phone, where fewer fit per row. */
+const NARROW_CARD_HEIGHT = 132;
 
 /** Height of one day card everywhere else, sized so the card reads as a square. */
 const CARD_HEIGHT = 132;
@@ -123,7 +131,11 @@ export function WeekView({weekStart, week, today, store, onOpenDay}: WeekViewPro
       <Divider variant="strong" isFullBleed />
 
       <Section variant="transparent" padding={4}>
-        <Grid columns={DAY_KEYS.length} gap={2}>
+        {/* Responsive rather than a fixed seven: the cards wrap to two on a
+            phone, where seven across would leave each one too narrow to read.
+            The grid owns that decision from a minimum card width, so no second
+            breakpoint is written here to drift from the stylesheet. */}
+        <Grid columns={{minWidth: PHONE_CARD_MIN_WIDTH, max: DAY_KEYS.length}} gap={2}>
           {DAY_KEYS.map((dayKey, index) => {
             const date = addDays(weekStart, index);
             const day = daysByKey.get(dayKey);

@@ -22,6 +22,18 @@ type EntryCardProps = {
 };
 
 /**
+ * Height of every segment card, in pixels.
+ *
+ * Fixed so the cards line up in their columns: the note is optional, and letting
+ * the content decide the height made a card with a note taller than one without,
+ * which left the columns ragged. The value fits the tallest real case, a card
+ * whose title wraps onto a second line and that also carries a note, so nothing
+ * is cut off. Both card kinds take it, since the clickable one has no minimum
+ * height of its own.
+ */
+const CARD_HEIGHT = 148;
+
+/**
  * One segment of the day as a card.
  *
  * Segments that carry a mark are clickable while their marking window is open:
@@ -89,7 +101,7 @@ export function EntryCard({
 
   if (!isInteractive) {
     return (
-      <Card variant={variant} elevation="low" padding={5}>
+      <Card variant={variant} elevation="low" padding={5} height={CARD_HEIGHT}>
         {content}
       </Card>
     );
@@ -103,6 +115,7 @@ export function EntryCard({
       variant={variant}
       elevation="low"
       padding={5}
+      height={CARD_HEIGHT}
       onClick={() => onToggle(entry.id)}
     >
       {content}

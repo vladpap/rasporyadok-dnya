@@ -87,7 +87,8 @@ export function DayView({day, date, now, store}: DayViewProps) {
             formatValueLabel={(value, maximum) => `${value} из ${maximum}`}
           />
           <Text type="supporting" color="secondary">
-            Отметить отрезок можно в течение часа после его окончания — потом карточка закрывается.
+            Отметить можно, когда время отрезка наступило и в течение часа после его окончания — потом карточка закрывается.
+            Отметить нельзя до наступления времени и позже, чем через час после конца.
           </Text>
         </Stack>
       </Section>

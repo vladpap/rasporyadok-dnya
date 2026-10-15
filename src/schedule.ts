@@ -241,12 +241,24 @@ export const MARKING_GRACE_MINUTES = 60;
 /** Milliseconds in one minute, for turning the window above into a moment. */
 const MILLISECONDS_PER_MINUTE = 60_000;
 
+/** A moment on the shown day at a given time of day, in milliseconds. */
+function minuteMoment(date: Date, minutes: number): number {
+  return new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    Math.floor(minutes / 60),
+    minutes % 60,
+  ).getTime();
+}
+
 /**
- * Whether a segment can still be marked as done.
+ * Whether a segment can be marked as done.
  *
- * The window closes one hour after the segment ends, measured on the day that is
- * being shown, so a segment of a future day is open, a segment of a past day is
- * closed, and today closes segment by segment as the day goes on.
+ * A segment is open only from the moment it starts, and closes one hour after it
+ * ends. The window is measured on the day that is being shown: a segment of a
+ * past day is closed, a segment of a future day has not started and is closed,
+ * and today opens each segment as its time arrives and closes it an hour after.
  *
  * @param date The day being shown.
  * @param entry Schedule segment.
@@ -254,16 +266,13 @@ const MILLISECONDS_PER_MINUTE = 60_000;
  * @returns True while the segment may still be marked or unmarked.
  */
 export function isMarkingOpen(date: Date, entry: ScheduleEntry, now: Date): boolean {
-  const endMinutes = timeToMinutes(entry.end);
-  const endMoment = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-    Math.floor(endMinutes / 60),
-    endMinutes % 60,
-  );
-  const closesAt = endMoment.getTime() + MARKING_GRACE_MINUTES * MILLISECONDS_PER_MINUTE;
-  return now.getTime() <= closesAt;
+  const nowMilliseconds = now.getTime();
+  if (nowMilliseconds < minuteMoment(date, timeToMinutes(entry.start))) {
+    return false;
+  }
+  const closesAt =
+    minuteMoment(date, timeToMinutes(entry.end)) + MARKING_GRACE_MINUTES * MILLISECONDS_PER_MINUTE;
+  return nowMilliseconds <= closesAt;
 }
 
 /**

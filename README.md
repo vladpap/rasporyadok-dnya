@@ -109,10 +109,12 @@ so a three-line segment and a one-line segment look deliberate next to each othe
 
 ### The marking window
 
-A segment can be marked or unmarked for one hour after it ends, and the window is
-measured on the day being shown: a future day is open, a past day is closed, and
-today closes segment by segment. `MARKING_GRACE_MINUTES` in `src/schedule.ts` holds
-that hour, and `isMarkingOpen()` decides it.
+A segment can be marked or unmarked only while its own time has come and for one
+hour after it ends; before it starts and after that hour it is closed. The window
+is measured on the day being shown: a segment of a past day is closed, a segment
+of a future day has not started and is closed, and today opens each segment as its
+time arrives and closes it an hour later. `MARKING_GRACE_MINUTES` in
+`src/schedule.ts` holds that hour, and `isMarkingOpen()` decides it.
 
 Once the window closes the card becomes a plain card: it stops being clickable, it
 turns muted, and it keeps the mark it already earned rather than losing it. The day

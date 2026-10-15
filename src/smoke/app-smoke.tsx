@@ -173,8 +173,13 @@ const clickableCount = markup.split('astryx-clickable-card').length - 1;
 if (cardCount < dayTitles.length) {
   problems.push(`Карточек ${cardCount}, а отрезков ${dayTitles.length}`);
 }
-if (clickableCount !== EXPECTED_TRACKED_COUNT) {
-  problems.push(`Кликабельных карточек ${clickableCount}, ожидалось ${EXPECTED_TRACKED_COUNT}`);
+// At 09:30 only the running segment has started and is still within its window,
+// so just the one card is clickable; the rest of the day is still ahead.
+const EXPECTED_RUNNING_CLICKABLE = 1;
+if (clickableCount !== EXPECTED_RUNNING_CLICKABLE) {
+  problems.push(
+    `Кликабельных карточек ${clickableCount}, ожидалось ${EXPECTED_RUNNING_CLICKABLE} (только текущий отрезок)`,
+  );
 }
 
 // The segment icons are lifted above the icon scale in the theme, so check the
@@ -390,24 +395,29 @@ if (!monthHost.innerHTML.includes('Прогресс дня')) {
 
 console.log('Клик по дню месяца открыл этот день');
 
-// A segment closes an hour after it ends, so later in the same day the morning
-// segments can no longer be marked. At 13:30 two of the seven have closed, and
-// the one marked earlier keeps its mark without staying changeable.
+// A segment can be marked only while it has started and for one hour after it
+// ends. At 13:30 on the shown day the morning segments have closed, and the
+// afternoon ones have not started yet, so of the seven only the running segment
+// is still open. The one marked earlier keeps its mark without staying changeable.
 setSimulatedNow('2026-10-14T13:30:00');
 const lateHost = await mountApp(MAIN_WIDTH);
 const lateClickableCount = lateHost.innerHTML.split('astryx-clickable-card').length - 1;
 const closedCardButton = lateHost.querySelector<HTMLButtonElement>(
   `button[aria-label^="${CLICKED_SEGMENT}"]`,
 );
+const futureCardButton = lateHost.querySelector<HTMLButtonElement>(
+  'button[aria-label^="Домашние задания"]',
+);
 const lockProblems: string[] = [];
 
-if (lateClickableCount !== EXPECTED_TRACKED_COUNT - 2) {
-  lockProblems.push(
-    `В 13:30 кликабельных карточек ${lateClickableCount}, ожидалось ${EXPECTED_TRACKED_COUNT - 2}`,
-  );
+if (lateClickableCount !== 1) {
+  lockProblems.push(`В 13:30 кликабельных карточек ${lateClickableCount}, ожидалось 1`);
 }
 if (closedCardButton) {
   lockProblems.push(`Закрытый отрезок остался кликабельным: ${CLICKED_SEGMENT}`);
+}
+if (futureCardButton) {
+  lockProblems.push('Отрезок, до которого время ещё не пришло, кликабелен');
 }
 if (!lateHost.querySelector('[aria-label="отмечено"]')) {
   lockProblems.push('Отметка, поставленная до закрытия окна, пропала');
@@ -421,7 +431,7 @@ if (lockProblems.length > 0) {
 }
 
 console.log(
-  `Окно отметки: в 13:30 закрыто 2 отрезка из ${EXPECTED_TRACKED_COUNT}, отметка сохранилась, карточка не кликабельна`,
+  'Окно отметки: в 13:30 из 7 отрезков кликабелен только текущий, отметка сохранилась, будущее и прошедшее не кликабельны',
 );
 resetSimulatedNow();
 

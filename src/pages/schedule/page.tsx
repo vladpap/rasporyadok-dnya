@@ -19,9 +19,10 @@ import type {ThemeMode} from '../../themeMode';
 import {useAuth} from '../../useAuth';
 import {useCurrentTime} from '../../useCurrentTime';
 import {findDay, useSchedule} from '../../useSchedule';
+import {EditPage} from './EditPage';
 
-/** The three views the page switches between. */
-type View = 'day' | 'week' | 'month';
+/** The views the page switches between. `edit` is only offered when signed in. */
+type View = 'day' | 'week' | 'month' | 'edit';
 
 type SchedulePageProps = {
   mode: ThemeMode;
@@ -79,6 +80,14 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
                 {/* Editing is for the editor alone, so the entry point is one
                     quiet button: it names who is signed in and offers the way in
                     or out. The child following the schedule never needs it. */}
+                {email ? (
+                  <Button
+                    label={view === 'edit' ? 'К расписанию' : 'Правка расписания'}
+                    variant="secondary"
+                    onClick={() => setView(view === 'edit' ? 'day' : 'edit')}
+                  />
+                ) : null}
+
                 {email ? (
                   <Button
                     label={`Выйти (${email})`}
@@ -179,7 +188,13 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
       {header}
 
       <LayoutContent padding={0} role="main">
-        {view === 'day' ? (
+        {view === 'edit' ? (
+          <EditPage
+            week={week}
+            onSaved={reload}
+            onClose={() => setView('day')}
+          />
+        ) : view === 'day' ? (
           <DayView day={day} date={selectedDate} now={now} store={markStore} />
         ) : view === 'week' ? (
           <WeekView

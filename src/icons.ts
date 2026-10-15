@@ -79,6 +79,18 @@ const ICON_REGISTRY: Record<string, IconComponent> = {
 const FALLBACK_ICON: IconComponent = CircleHelp;
 
 /**
+ * Every icon name the schedule may use, in a stable order.
+ *
+ * The edit page offers these as choices, so the list is built once here instead
+ * of at each call site.
+ *
+ * @returns The known icon names, alphabetically.
+ */
+export function getIconNames(): string[] {
+  return Object.keys(ICON_REGISTRY).sort((left, right) => left.localeCompare(right));
+}
+
+/**
  * Look up the icon of a segment.
  *
  * @param name Icon name from the schedule data.

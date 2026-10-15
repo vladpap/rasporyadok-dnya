@@ -22,7 +22,7 @@ import {
   timeToMinutes,
   validateEntries,
   validateSchedule,
-} from '../lib/schedule-schema.mjs';
+} from '../../src/lib/schedule-schema.mjs';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 

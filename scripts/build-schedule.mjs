@@ -24,7 +24,7 @@ import {
   formatDuration,
   summarizeDay,
   validateSchedule,
-} from './lib/schedule-schema.mjs';
+} from '../src/lib/schedule-schema.mjs';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePath = join(projectRoot, 'data', 'schedule.csv');

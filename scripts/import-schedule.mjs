@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 
 import { parseCsv } from './lib/csv.mjs';
-import { ENTRY_FIELDS, createEntry, validateSchedule } from './lib/schedule-schema.mjs';
+import { ENTRY_FIELDS, createEntry, validateSchedule } from '../src/lib/schedule-schema.mjs';
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePath = join(projectRoot, 'data', 'schedule.csv');

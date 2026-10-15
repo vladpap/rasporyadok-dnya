@@ -117,10 +117,14 @@ function themeParts(key: ThemeKey) {
           // stands out on both the plain card and the accent one.
           backgroundColor: 'var(--color-accent)',
           color: 'var(--color-on-accent)',
-          // The running badge is a short word on a busy card, so it is given more
-          // room than the default padding leaves: about twice the width, which is
-          // what makes it read as a label rather than as a stray dot of colour.
-          paddingInline: 'var(--spacing-5)',
+          // The running badge is a short word on a busy card, so it is given a
+          // minimum width as well as room around the word. Padding alone widened
+          // the pill by a couple of millimetres, because the label is only six
+          // letters: the minimum is what makes it read as a label rather than as a
+          // stray dot of colour.
+          paddingInline: 'var(--spacing-4)',
+          minWidth: 'var(--spacing-12)',
+          justifyContent: 'center',
         },
       },
       icon: {

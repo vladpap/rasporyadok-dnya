@@ -265,6 +265,14 @@ if (!storedMarks.includes(CLICKED_SEGMENT_ID)) {
 if (!storedMarks.includes(SHOWN_DATE_KEY)) {
   clickProblems.push('Отметка сохранена не под датой показанного дня');
 }
+// Every countable segment offers a mark on its right edge: the one just clicked
+// now reports itself done, and the rest still ask to be marked.
+if (!markupAfterClick.includes(`aria-label="отмечено"`)) {
+  clickProblems.push('Отмеченный отрезок не показывает галочку на правом краю');
+}
+if (!markupAfterClick.includes(`aria-label="нужно отметить"`)) {
+  clickProblems.push('Неотмеченные отрезки не показывают, что их нужно отметить');
+}
 
 if (clickProblems.length > 0) {
   fail(clickProblems);

@@ -19,8 +19,24 @@ const TWO_COLUMN_MIN_WIDTH = 900;
 /** Narrowest viewport that fits three cards side by side, in pixels. */
 const THREE_COLUMN_MIN_WIDTH = 1400;
 
+/**
+ * Widest viewport that still counts as narrow, in pixels.
+ * A phone needs smaller progress rings in the month grid than a desktop does.
+ */
+const NARROW_MAX_WIDTH = 599;
+
 const TWO_COLUMN_QUERY = `(min-width: ${TWO_COLUMN_MIN_WIDTH}px)`;
 const THREE_COLUMN_QUERY = `(min-width: ${THREE_COLUMN_MIN_WIDTH}px)`;
+const NARROW_QUERY = `(max-width: ${NARROW_MAX_WIDTH}px)`;
+
+/**
+ * Whether the viewport is phone sized.
+ *
+ * @returns True on a narrow viewport.
+ */
+export function useNarrowViewport(): boolean {
+  return useMediaQuery(NARROW_QUERY);
+}
 
 /**
  * How many columns the current viewport fits.

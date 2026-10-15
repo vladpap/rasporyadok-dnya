@@ -297,6 +297,61 @@ for (const {width, expectedColumns} of WIDTH_CASES) {
   console.log(`Ширина ${width}: колонок ${columns.length}, все отрезки на месте`);
 }
 
+// The month view draws every day of October 2026 as a progress ring. One segment
+// was marked earlier, so exactly one ring must carry a filled arc.
+const monthHost = await mountApp(MAIN_WIDTH);
+const monthRadio = monthHost.querySelector<HTMLElement>('[role="radio"][data-value="month"]');
+if (!monthRadio) {
+  fail(['Не найден переключатель месяца']);
+}
+
+monthRadio.click();
+await settle();
+
+const monthMarkup = monthHost.innerHTML;
+const monthCells = monthMarkup.split('astryx-clickable-card').length - 1;
+const filledRings = monthMarkup.split('stroke-dasharray').length - 1;
+const dayCellButton = monthHost.querySelector<HTMLButtonElement>(
+  'button[aria-label^="среда, 14 октября"]',
+);
+const monthProblems: string[] = [];
+
+if (!monthMarkup.includes('октябрь 2026')) {
+  monthProblems.push('Месяц не подписан');
+}
+if (!monthMarkup.includes('За месяц сделано')) {
+  monthProblems.push('Нет итога по месяцу');
+}
+if (!monthMarkup.includes('Пн') || !monthMarkup.includes('Вс')) {
+  monthProblems.push('Нет заголовков дней недели');
+}
+if (monthCells < 28 || monthCells > 42) {
+  monthProblems.push(`Дней в сетке месяца ${monthCells}, ожидалось от 28 до 42`);
+}
+if (filledRings !== 1) {
+  monthProblems.push(`Колец с прогрессом ${filledRings}, ожидалось 1`);
+}
+if (!dayCellButton) {
+  monthProblems.push('День месяца не кликабелен');
+}
+
+if (monthProblems.length > 0) {
+  fail(monthProblems);
+}
+
+console.log(`Месяц: дней ${monthCells}, кольцо с прогрессом ${filledRings}, день открывается`);
+
+// Opening a day from the month must land in the day view for that date. The
+// guard above already failed if the button is missing, so it is non-null here.
+dayCellButton?.click();
+await settle();
+
+if (!monthHost.innerHTML.includes('Прогресс дня')) {
+  fail(['Клик по дню месяца не открыл день']);
+}
+
+console.log('Клик по дню месяца открыл этот день');
+
 // A segment closes an hour after it ends, so later in the same day the morning
 // segments can no longer be marked. At 13:30 two of the seven have closed, and
 // the one marked earlier keeps its mark without staying changeable.

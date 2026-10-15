@@ -15,7 +15,7 @@ import {
   getScheduleDay,
   isSameDate,
 } from '../schedule';
-import {useWeekMarks} from '../useMarks';
+import {useRangeMarks} from '../useMarks';
 
 type WeekViewProps = {
   /** Monday of the shown week. */
@@ -39,7 +39,8 @@ const PROGRESS_FLOOR = 1;
  * @returns The week view.
  */
 export function WeekView({weekStart, today, store, onOpenDay}: WeekViewProps) {
-  const marksByDay = useWeekMarks(weekStart, store);
+  const dayKeys = DAY_KEYS.map((_, index) => dateKey(addDays(weekStart, index)));
+  const marksByDay = useRangeMarks(dayKeys, store);
   const weekEnd = addDays(weekStart, DAY_KEYS.length - 1);
 
   return (

@@ -9,14 +9,15 @@ import {Heading} from '@astryxdesign/core/Text';
 import {Moon, Sun} from 'lucide-react';
 
 import {DayView} from '../../components/DayView';
+import {MonthView} from '../../components/MonthView';
 import {WeekView} from '../../components/WeekView';
 import {createMarkStore} from '../../marks';
 import {dayKeyForDate, getScheduleDay, isSameDate, startOfWeek} from '../../schedule';
 import type {ThemeMode} from '../../themeMode';
 import {useCurrentTime} from '../../useCurrentTime';
 
-/** The two views the page switches between. */
-type View = 'day' | 'week';
+/** The three views the page switches between. */
+type View = 'day' | 'week' | 'month';
 
 type SchedulePageProps = {
   mode: ThemeMode;
@@ -86,10 +87,13 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
             <SegmentedControl
               label="Что показать"
               value={view}
-              onChange={(nextView) => setView(nextView === 'week' ? 'week' : 'day')}
+              onChange={(nextView) =>
+                setView(nextView === 'week' ? 'week' : nextView === 'month' ? 'month' : 'day')
+              }
             >
               <SegmentedControlItem value="day" label="День" />
               <SegmentedControlItem value="week" label="Неделя" />
+              <SegmentedControlItem value="month" label="Месяц" />
             </SegmentedControl>
           </Stack>
         </Card>
@@ -98,11 +102,22 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
       <LayoutContent padding={0} role="main">
         {view === 'day' ? (
           <DayView day={day} date={selectedDate} now={now} store={markStore} />
-        ) : (
+        ) : view === 'week' ? (
           <WeekView
             weekStart={startOfWeek(selectedDate)}
             today={now}
             store={markStore}
+            onOpenDay={(date) => {
+              setSelectedDate(date);
+              setView('day');
+            }}
+          />
+        ) : (
+          <MonthView
+            monthAnchor={selectedDate}
+            today={now}
+            store={markStore}
+            onNavigateMonth={setSelectedDate}
             onOpenDay={(date) => {
               setSelectedDate(date);
               setView('day');

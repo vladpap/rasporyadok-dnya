@@ -9,7 +9,7 @@
     "test": "node --test scripts/tests/*.test.mjs",
     "dev": "npm run data && vite",
     "build": "npm run data && tsc --noEmit && vite build",
-    "smoke": "npm run data && vite build --ssr src/smoke/app-smoke.tsx --outDir .smoke --logLevel error && node .smoke/app-smoke.js",
+    "smoke": "npm run data && vite build --ssr src/smoke/app-smoke.tsx --outDir .smoke --logLevel error && node scripts/run-smoke.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

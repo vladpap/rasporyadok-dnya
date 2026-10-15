@@ -1,7 +1,6 @@
 import {useCallback, useEffect, useState} from 'react';
 
 import type {MarkStore} from './marks';
-import {addDays, dateKey} from './schedule';
 
 /** Marks of one day, plus the toggle the day view needs. */
 export type DayMarks = {
@@ -50,31 +49,26 @@ export function useDayMarks(dayKey: string, store: MarkStore): DayMarks {
   return {doneIds, toggle};
 }
 
-/** Marks of every day of one week, keyed by calendar day. */
-export type WeekMarks = ReadonlyMap<string, ReadonlySet<string>>;
-
-/** Number of days a week view shows. */
-const DAYS_PER_WEEK = 7;
+/** Marks of a set of days, keyed by calendar day. */
+export type MarksByDay = ReadonlyMap<string, ReadonlySet<string>>;
 
 /**
- * Load the marks of a whole week at once, so day rows can show their progress.
+ * Load the marks of a set of days at once, so a summary of a week or a month can
+ * show the progress of every day it lists.
  *
- * @param weekStart Monday of the shown week.
+ * @param dayKeys Calendar days to read, as `YYYY-MM-DD`.
  * @param store Storage the marks are read from.
  * @returns Marks keyed by calendar day, empty until loading finishes.
  */
-export function useWeekMarks(weekStart: Date, store: MarkStore): WeekMarks {
-  const [marksByDay, setMarksByDay] = useState<WeekMarks>(() => new Map());
+export function useRangeMarks(dayKeys: readonly string[], store: MarkStore): MarksByDay {
+  const [marksByDay, setMarksByDay] = useState<MarksByDay>(() => new Map());
 
-  // The week is identified by its Monday, so the effect re-runs on a new week
-  // and not on every render that builds a fresh Date object.
-  const weekKey = dateKey(weekStart);
+  // The range is identified by its days, so the effect re-runs when the range
+  // changes and not on every render that builds fresh Date objects.
+  const rangeKey = dayKeys.join(',');
 
   useEffect(() => {
     let isActive = true;
-    const dayKeys = Array.from({length: DAYS_PER_WEEK}, (_, index) =>
-      dateKey(addDays(weekStart, index)),
-    );
 
     void Promise.all(
       dayKeys.map(async (dayKey) => {
@@ -90,8 +84,8 @@ export function useWeekMarks(weekStart: Date, store: MarkStore): WeekMarks {
     return () => {
       isActive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- weekKey stands for weekStart
-  }, [weekKey, store]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rangeKey stands for dayKeys
+  }, [rangeKey, store]);
 
   return marksByDay;
 }

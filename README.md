@@ -71,15 +71,18 @@ Activity kinds:
 | `src/theme.ts` | The violet theme, built by extending the shipped neutral theme. |
 | `src/themeMode.ts` | Light or dark colour mode, remembered in local storage. |
 | `src/App.tsx` | Theme provider and application shell. |
-| `src/pages/schedule/page.tsx` | The page: accent header with the view switch and an icon-only light/dark switch on the right, selected date, clock, day and week views. |
+| `src/pages/schedule/page.tsx` | The page: accent header with the view switch and an icon-only light/dark switch on the right, selected date, clock, and the day, week and month views. |
 | `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in as many columns as the width allows. |
 | `src/components/WeekView.tsx` | The week: one row per day with its progress, opening a day. |
+| `src/components/MonthView.tsx` | The month: one progress ring per day, opening a day; prev/next moves between months. |
+| `src/components/ProgressRing.tsx` | The small SVG ring a month day is drawn with, one ring per shape. |
 | `src/components/EntryCard.tsx` | One segment as a card, clickable when it carries a mark. |
 | `src/columns.ts` | How many columns the width fits, and how segments are spread across them. |
 | `src/icons.ts` | Icon names from the data mapped to icon components. |
 | `src/schedule.ts` | Typed access to the generated data and the time rules. |
+| `src/month.ts` | Month arithmetic: month titles, whole-week grids and navigating between months. |
 | `src/marks.ts` | Where the done marks live. |
-| `src/useMarks.ts` | Hooks that load and update marks for a day and a week. |
+| `src/useMarks.ts` | Hooks that load and update marks for a day and a range of days. |
 | `src/useCurrentTime.ts` | Clock that refreshes the page while it stays open. |
 
 The day view is a column layout of tall cards, in time order, under an accent
@@ -115,6 +118,25 @@ Once the window closes the card becomes a plain card: it stops being clickable, 
 turns muted, and it keeps the mark it already earned rather than losing it. The day
 header states the rule in one line, so a card that does not respond is explained
 where the person is looking.
+
+### The month view
+
+The month view is a seven-column grid, one column per weekday, that starts on
+Monday like the schedule weeks do (`src/month.ts`). Each day is one cell drawn as a
+small progress ring: the day number in the middle, the achieved share as the filled
+arc, and the routed part of the ring left as the track. The ring is a tiny inline
+SVG (`src/components/ProgressRing.tsx`) rather than a chart component, because the
+design system has no ring primitive and a dedicated dependency would be heavy for a
+single circle; it still reads its two colours from the theme tokens, so it follows
+the light/dark mode and the violet accent without hardcoded values.
+
+A whole week always fits the grid, so the month starts on the Monday of or before
+the first day and ends on the Sunday of or after the last day — that is why a month
+cell count runs between 28 and 42. Days outside the month are left transparent,
+today is the accent variant, and past days keep the marks they have. The grid
+header shows the nominative month (`октябрь 2026`) and the total marked in the
+month, and chevron buttons move to the previous and next month. Clicking any day
+opens that day's view.
 
 ### Where marks are stored
 
@@ -191,8 +213,10 @@ with the earliest segment in the first column, clicks the running card and
 verifies that the mark appears, that the day progress moves and that the mark is
 stored under that calendar day, switches the colour mode and verifies that the
 choice is stored, renders the page at 600, 1280 and 1500 pixels wide and checks
-that it gives one, two and three columns with every segment present, and finally
-moves the clock to 13:30 to check that the morning segments closed their marking
-window, that a closed card is not clickable and that a mark taken earlier survived.
-Set `SMOKE_DUMP=/tmp/page.html` to write the rendered markup and the theme's
-injected styles for inspection.
+that it gives one, two and three columns with every segment present, opens the
+month view and verifies its title, the daily weekday labels, the cell count, the
+single filled ring for the marked day and that clicking a day returns to that day,
+and finally moves the clock to 13:30 to check that the morning segments closed
+their marking window, that a closed card is not clickable and that a mark taken
+earlier survived. Set `SMOKE_DUMP=/tmp/page.html` to write the rendered markup and
+the theme's injected styles for inspection.

@@ -103,6 +103,15 @@ class ObserverStub {
 globalThis.ResizeObserver = ObserverStub as unknown as typeof ResizeObserver;
 globalThis.IntersectionObserver = ObserverStub as unknown as typeof IntersectionObserver;
 
+// jsdom implements neither `CSS.escape` nor the custom highlight API, and
+// Astryx's Dialog uses `CSS.escape` to build a selector for its title. Without
+// this the dialog throws while rendering, which would hide real regressions.
+if (!('CSS' in globalThis) || typeof (globalThis as {CSS?: {escape?: unknown}}).CSS?.escape !== 'function') {
+  publishGlobal('CSS', {
+    escape: (value: string) => value.replace(/[^a-zA-Z0-9_-]/g, (character) => `\\${character}`),
+  });
+}
+
 /** Date that always answers with the frozen moment when called without arguments. */
 class FixedDate extends Date {
   constructor(...args: unknown[]) {

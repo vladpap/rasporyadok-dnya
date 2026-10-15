@@ -57,6 +57,8 @@ const EXPECTED_TEXTS = [
   'Физика / химия',
   'сейчас',
   'Подъём, зарядка, гигиена',
+  // Reading is public, so the page offers a quiet way in to edit it.
+  'Войти',
 ];
 
 /** How many of the shown day's segments carry a mark, and are clickable. */

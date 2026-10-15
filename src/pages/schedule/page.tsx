@@ -11,10 +11,12 @@ import {Moon, Sun} from 'lucide-react';
 
 import {DayView} from '../../components/DayView';
 import {MonthView} from '../../components/MonthView';
+import {SignInDialog} from '../../components/SignInDialog';
 import {WeekView} from '../../components/WeekView';
 import {createMarkStore} from '../../marks';
 import {dayKeyForDate, isSameDate, startOfWeek} from '../../schedule';
 import type {ThemeMode} from '../../themeMode';
+import {useAuth} from '../../useAuth';
 import {useCurrentTime} from '../../useCurrentTime';
 import {findDay, useSchedule} from '../../useSchedule';
 
@@ -36,7 +38,9 @@ type SchedulePageProps = {
  * marks today. Opening a day from the week or the month switches to the day view.
  *
  * The header is an accent card, which gives the page the coloured top the design
- * calls for without a colour override anywhere else.
+ * calls for without a colour override anywhere else. It also carries the one
+ * quiet sign in control, because reading the schedule is public while editing it
+ * is not.
  *
  * @param props Colour mode and its setter, owned by the app root.
  * @returns The page.
@@ -44,6 +48,8 @@ type SchedulePageProps = {
 export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
   const markStore = useMemo(() => createMarkStore(), []);
   const {week, isLoading, error, reload} = useSchedule();
+  const {email, signIn, signOut} = useAuth();
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [view, setView] = useState<View>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const now = useCurrentTime();
@@ -51,57 +57,84 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
   const isShowingToday = isSameDate(selectedDate, now);
   const day = findDay(week, dayKeyForDate(selectedDate));
 
+  // The sign in dialog lives with the header rather than with the views, so it
+  // stays reachable while the schedule is still loading or has failed.
   const header = (
-    <LayoutHeader padding={4}>
-      <Card variant="purple" elevation="low" padding={5}>
-        <Stack direction="vertical" gap={4}>
-          <Stack direction="horizontal" gap={4} vAlign="center" justify="between" wrap="wrap">
-            <Heading level={1}>Распорядок дня</Heading>
+    <>
+      <LayoutHeader padding={4}>
+        <Card variant="purple" elevation="low" padding={5}>
+          <Stack direction="vertical" gap={4}>
+            <Stack direction="horizontal" gap={4} vAlign="center" justify="between" wrap="wrap">
+              <Heading level={1}>Распорядок дня</Heading>
 
-            <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
-              {!isShowingToday && (
-                <Button
-                  label="К сегодняшнему дню"
-                  variant="secondary"
-                  onClick={() => setSelectedDate(new Date())}
-                />
-              )}
+              <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
+                {!isShowingToday && (
+                  <Button
+                    label="К сегодняшнему дню"
+                    variant="secondary"
+                    onClick={() => setSelectedDate(new Date())}
+                  />
+                )}
 
-              <SegmentedControl
-                label="Тема оформления"
-                value={mode}
-                onChange={(nextMode) => onModeChange(nextMode === 'dark' ? 'dark' : 'light')}
-              >
-                <SegmentedControlItem
-                  value="light"
-                  label="Светлая тема"
-                  icon={<Icon icon={Sun} size="sm" />}
-                  isLabelHidden
-                />
-                <SegmentedControlItem
-                  value="dark"
-                  label="Тёмная тема"
-                  icon={<Icon icon={Moon} size="sm" />}
-                  isLabelHidden
-                />
-              </SegmentedControl>
+                {/* Editing is for the editor alone, so the entry point is one
+                    quiet button: it names who is signed in and offers the way in
+                    or out. The child following the schedule never needs it. */}
+                {email ? (
+                  <Button
+                    label={`Выйти (${email})`}
+                    variant="ghost"
+                    onClick={() => void signOut()}
+                  />
+                ) : (
+                  <Button
+                    label="Войти"
+                    variant="ghost"
+                    onClick={() => setIsSignInOpen(true)}
+                  />
+                )}
+
+                <SegmentedControl
+                  label="Тема оформления"
+                  value={mode}
+                  onChange={(nextMode) => onModeChange(nextMode === 'dark' ? 'dark' : 'light')}
+                >
+                  <SegmentedControlItem
+                    value="light"
+                    label="Светлая тема"
+                    icon={<Icon icon={Sun} size="sm" />}
+                    isLabelHidden
+                  />
+                  <SegmentedControlItem
+                    value="dark"
+                    label="Тёмная тема"
+                    icon={<Icon icon={Moon} size="sm" />}
+                    isLabelHidden
+                  />
+                </SegmentedControl>
+              </Stack>
             </Stack>
-          </Stack>
 
-          <SegmentedControl
-            label="Что показать"
-            value={view}
-            onChange={(nextView) =>
-              setView(nextView === 'week' ? 'week' : nextView === 'month' ? 'month' : 'day')
-            }
-          >
-            <SegmentedControlItem value="day" label="День" />
-            <SegmentedControlItem value="week" label="Неделя" />
-            <SegmentedControlItem value="month" label="Месяц" />
-          </SegmentedControl>
-        </Stack>
-      </Card>
-    </LayoutHeader>
+            <SegmentedControl
+              label="Что показать"
+              value={view}
+              onChange={(nextView) =>
+                setView(nextView === 'week' ? 'week' : nextView === 'month' ? 'month' : 'day')
+              }
+            >
+              <SegmentedControlItem value="day" label="День" />
+              <SegmentedControlItem value="week" label="Неделя" />
+              <SegmentedControlItem value="month" label="Месяц" />
+            </SegmentedControl>
+          </Stack>
+        </Card>
+      </LayoutHeader>
+
+      <SignInDialog
+        isOpen={isSignInOpen}
+        onOpenChange={setIsSignInOpen}
+        onSignIn={signIn}
+      />
+    </>
   );
 
   // The schedule is not available until the first read finishes, so state is

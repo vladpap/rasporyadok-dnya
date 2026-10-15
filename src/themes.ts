@@ -117,6 +117,10 @@ function themeParts(key: ThemeKey) {
           // stands out on both the plain card and the accent one.
           backgroundColor: 'var(--color-accent)',
           color: 'var(--color-on-accent)',
+          // The running badge is a short word on a busy card, so it is given more
+          // room than the default padding leaves: about twice the width, which is
+          // what makes it read as a label rather than as a stray dot of colour.
+          paddingInline: 'var(--spacing-5)',
         },
       },
       icon: {

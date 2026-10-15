@@ -308,6 +308,49 @@ if (modeProblems.length > 0) {
 
 console.log('Переключатель темы: тёмная выбрана и сохранена');
 
+// The colour theme is a second, independent choice: the accent the palette is
+// built from. Choosing another one must change the accent the page renders with
+// and remember the choice, so a reload keeps it.
+const THEME_STORAGE_KEY = 'rasporyadok-dnya.theme';
+const themeHost = await mountApp(MAIN_WIDTH);
+
+const themeGear = themeHost.querySelector<HTMLButtonElement>(
+  'button[aria-label^="Цвет темы"]',
+);
+if (!themeGear) {
+  fail(['Не найдена кнопка выбора цвета темы']);
+}
+themeGear.click();
+await settle();
+
+// The options are native radio inputs carrying the theme key as their value, and
+// the name is attached through aria-labelledby rather than aria-label.
+const greenOption = themeHost.querySelector<HTMLInputElement>('input[type="radio"][value="green"]');
+if (!greenOption) {
+  fail(['В выборе цвета нет зелёной темы']);
+}
+greenOption.click();
+await settle();
+
+const themeProblems: string[] = [];
+// The provider marks the active theme on the document root, which is what the
+// scoped palette rules key off. Reading that is exact, where scraping the
+// stylesheet is not: a switch briefly leaves both palettes in the document.
+const activeTheme = document.documentElement.getAttribute('data-astryx-theme') ?? '';
+
+if (activeTheme !== 'schedule-green') {
+  themeProblems.push(`Активная тема "${activeTheme}", ожидалась "schedule-green"`);
+}
+if (window.localStorage.getItem(THEME_STORAGE_KEY) !== 'green') {
+  themeProblems.push('Выбор цвета темы не сохранён в хранилище');
+}
+
+if (themeProblems.length > 0) {
+  fail(themeProblems);
+}
+
+console.log(`Выбор цвета темы: применена "${activeTheme}", выбор сохранён`);
+
 // Check the layout at every width it switches at.
 for (const {width, expectedColumns} of WIDTH_CASES) {
   const wideHost = await mountApp(width);

@@ -13,9 +13,11 @@ import {CircleHelp, Moon, Sun} from 'lucide-react';
 import {DayView} from '../../components/DayView';
 import {MonthView} from '../../components/MonthView';
 import {SignInDialog} from '../../components/SignInDialog';
+import {ThemePicker} from '../../components/ThemePicker';
 import {WeekView} from '../../components/WeekView';
 import {createMarkStore} from '../../marks';
 import {dayKeyForDate, isSameDate, startOfWeek} from '../../schedule';
+import type {ThemeKey} from '../../themes';
 import type {ThemeMode} from '../../themeMode';
 import {useAuth} from '../../useAuth';
 import {useCurrentTime} from '../../useCurrentTime';
@@ -33,6 +35,10 @@ type View = 'day' | 'week' | 'month' | 'edit';
 type SchedulePageProps = {
   mode: ThemeMode;
   onModeChange: (mode: ThemeMode) => void;
+  /** The chosen colour theme. */
+  themeKey: ThemeKey;
+  /** Choose another colour theme. */
+  onThemeKeyChange: (key: ThemeKey) => void;
 };
 
 /**
@@ -52,7 +58,12 @@ type SchedulePageProps = {
  * @param props Colour mode and its setter, owned by the app root.
  * @returns The page.
  */
-export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
+export default function SchedulePage({
+  mode,
+  onModeChange,
+  themeKey,
+  onThemeKeyChange,
+}: SchedulePageProps) {
   const markStore = useMemo(() => createMarkStore(), []);
   const {week, isLoading, error, reload} = useSchedule();
   const {email, avatarUrl, canEdit, signIn, signInWithGoogle, signOut} = useAuth();
@@ -150,6 +161,10 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
                     isLabelHidden
                   />
                 </SegmentedControl>
+
+                {/* The gear sits with the light and dark switch, because both
+                    answer the same question about how the page looks. */}
+                <ThemePicker themeKey={themeKey} onChange={onThemeKeyChange} />
               </Stack>
             </Stack>
 

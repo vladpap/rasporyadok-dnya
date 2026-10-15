@@ -2,27 +2,35 @@ import {AppShell} from '@astryxdesign/core/AppShell';
 import {Theme} from '@astryxdesign/core/theme';
 
 import SchedulePage from './pages/schedule/page';
-import {violetTheme} from './theme';
+import {getTheme} from './themes';
+import {useThemeChoice} from './useThemeChoice';
 import {useThemeMode} from './themeMode';
 
 /**
  * Application root: the theme, the shell and the page.
  *
- * The colour mode lives here rather than inside the page, because the theme
- * provider sits above the shell and both the page and every component below it
- * follow the same mode. The shell handles the viewport, the scroll regions and
- * the mobile navigation; content padding stays at zero because the page sets its
- * own padding.
+ * Two independent choices meet here. The colour mode says light or dark, and the
+ * theme says which accent the palette is built from; either can change without
+ * the other. Both live above the shell, because the provider sits here and
+ * everything below follows it. The shell handles the viewport, the scroll regions
+ * and the mobile navigation; content padding stays at zero because the page sets
+ * its own padding.
  *
  * @returns The application.
  */
 export function App() {
   const [mode, setMode] = useThemeMode();
+  const {themeKey, setThemeKey} = useThemeChoice();
 
   return (
-    <Theme theme={violetTheme} mode={mode}>
+    <Theme theme={getTheme(themeKey)} mode={mode}>
       <AppShell contentPadding={0}>
-        <SchedulePage mode={mode} onModeChange={setMode} />
+        <SchedulePage
+          mode={mode}
+          onModeChange={setMode}
+          themeKey={themeKey}
+          onThemeKeyChange={setThemeKey}
+        />
       </AppShell>
     </Theme>
   );

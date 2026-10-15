@@ -54,7 +54,14 @@ export function ProgressRing({
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true" focusable="false">
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      aria-hidden="true"
+      focusable="false"
+      data-progress-ring=""
+    >
       <circle
         cx={center}
         cy={center}

@@ -1,11 +1,13 @@
 import {Badge} from '@astryxdesign/core/Badge';
+import {ClickableCard} from '@astryxdesign/core/ClickableCard';
 import {Divider} from '@astryxdesign/core/Divider';
-import {Stack} from '@astryxdesign/core/Layout';
-import {List, ListItem} from '@astryxdesign/core/List';
+import {Grid} from '@astryxdesign/core/Grid';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
 import {Section} from '@astryxdesign/core/Section';
+import {Stack} from '@astryxdesign/core/Stack';
 import {Heading, Text} from '@astryxdesign/core/Text';
 
+import {useNarrowViewport} from '../columns';
 import type {MarkStore} from '../marks';
 import {
   DAY_KEYS,
@@ -14,9 +16,11 @@ import {
   dateKey,
   formatDayTitle,
   isSameDate,
+  type DayKey,
   type ScheduleDay,
 } from '../schedule';
 import {useRangeMarks} from '../useMarks';
+import {ProgressRing} from './ProgressRing';
 
 type WeekViewProps = {
   /** Monday of the shown week. */
@@ -31,31 +35,54 @@ type WeekViewProps = {
 /** Minimum progress maximum, so a day without checkboxes still renders a bar. */
 const PROGRESS_FLOOR = 1;
 
+/** Ring diameter on a phone, where seven columns have little room. */
+const NARROW_RING_SIZE = 34;
+
+/** Ring diameter everywhere else. */
+const RING_SIZE = 56;
+
+/** Height of one day card on a phone, where the ring is smaller. */
+const NARROW_CARD_HEIGHT = 104;
+
+/** Height of one day card everywhere else, sized so the card reads as a square. */
+const CARD_HEIGHT = 132;
+
+/** Marks of a day that has none, so the progress reads zero without a lookup. */
+const NO_MARKS: ReadonlySet<string> = new Set<string>();
+
 /**
- * The whole week as a list of days.
+ * One week as seven square cards, each with a ring of that day's progress.
  *
- * The header sums the week: a badge with how much is done and a progress bar
- * over every countable segment of the week. Below it every day row shows its
- * date, its own progress bar and a marker for today. Opening a row switches to
- * the day view for that date, where the marks themselves are set.
+ * The week used to be a list of rows with a linear bar each, which answered the
+ * sum but read as a report. Seven cards in a row read as a week at a glance: the
+ * ring carries the share, the number in the middle carries the progress, and the
+ * day and its date sit above. Opening a card switches to that day, where the
+ * marks themselves are set.
+ *
+ * The header still sums the whole week, and a divider keeps that sum apart from
+ * the days below it.
  *
  * @param props Week to show, the clock, storage and the day opener.
  * @returns The week view.
  */
 export function WeekView({weekStart, week, today, store, onOpenDay}: WeekViewProps) {
+  const isNarrow = useNarrowViewport();
+  const ringSize = isNarrow ? NARROW_RING_SIZE : RING_SIZE;
+  const cardHeight = isNarrow ? NARROW_CARD_HEIGHT : CARD_HEIGHT;
+
   const dayKeys = DAY_KEYS.map((_, index) => dateKey(addDays(weekStart, index)));
   const marksByDay = useRangeMarks(dayKeys, store);
   const weekEnd = addDays(weekStart, DAY_KEYS.length - 1);
   const daysByKey = new Map(week.map((day) => [day.key, day]));
-  const entriesOf = (dayKey: (typeof DAY_KEYS)[number]) => daysByKey.get(dayKey)?.entries ?? [];
+  const entriesOf = (dayKey: DayKey) => daysByKey.get(dayKey)?.entries ?? [];
 
   // Sum the marked and countable segments across every day of the week, so the
-  // header can show how much of the whole week is done beside the per-day bars.
+  // header can show how much of the whole week is done beside the day rings.
   const weekProgress = DAY_KEYS.reduce(
     (totals, dayKey, index) => {
       const {done, total} = countProgress(
         entriesOf(dayKey),
-        marksByDay.get(dateKey(addDays(weekStart, index))) ?? new Set<string>(),
+        marksByDay.get(dateKey(addDays(weekStart, index))) ?? NO_MARKS,
       );
       return {done: totals.done + done, total: totals.total + total};
     },
@@ -91,42 +118,53 @@ export function WeekView({weekStart, week, today, store, onOpenDay}: WeekViewPro
         </Stack>
       </Section>
 
-      {/* The weekly total above and the per-day rows below are different
-          readings, so a visible divider keeps the sum from blurring into the
-          list of days. */}
+      {/* The weekly total above and the day cards below are different readings,
+          so a visible divider keeps the sum from blurring into the days. */}
       <Divider variant="strong" isFullBleed />
 
-      <Section variant="transparent" padding={0}>
-        <List density="balanced" hasDividers>
+      <Section variant="transparent" padding={4}>
+        <Grid columns={DAY_KEYS.length} gap={2}>
           {DAY_KEYS.map((dayKey, index) => {
             const date = addDays(weekStart, index);
             const day = daysByKey.get(dayKey);
-            const dayLabel = day?.label ?? dayKey;
-            const dayFullLabel = day?.fullLabel ?? dayKey;
-            const doneIds = marksByDay.get(dateKey(date)) ?? new Set<string>();
-            const {done, total} = countProgress(day?.entries ?? [], doneIds);
+            const {done, total} = countProgress(
+              entriesOf(dayKey),
+              marksByDay.get(dateKey(date)) ?? NO_MARKS,
+            );
+            const isToday = isSameDate(date, today);
 
             return (
-              <ListItem
+              <ClickableCard
                 key={dayKey}
-                label={`${dayLabel} · ${formatDayTitle(date)}`}
-                description={
-                  <Stack direction="vertical" gap={1}>
-                    <ProgressBar
-                      label={`Прогресс: ${dayFullLabel}`}
-                      value={done}
-                      max={total || PROGRESS_FLOOR}
-                      hasValueLabel
-                      formatValueLabel={(value, maximum) => `${value} из ${maximum}`}
-                    />
-                  </Stack>
-                }
-                endContent={isSameDate(date, today) ? <Badge label="сегодня" variant="purple" /> : null}
+                label={`${formatDayTitle(date)}: сделано ${done} из ${total}`}
+                variant={isToday ? 'purple' : 'default'}
+                elevation="low"
+                padding={2}
+                height={cardHeight}
                 onClick={() => onOpenDay(date)}
-              />
+              >
+                <Stack direction="vertical" gap={2} hAlign="center" vAlign="between">
+                  <Stack direction="vertical" gap={1} hAlign="center">
+                    <Text type="label" color="secondary">
+                      {day?.label ?? dayKey}
+                    </Text>
+                    <Text type="supporting" color="secondary">
+                      {String(date.getDate())}
+                    </Text>
+                  </Stack>
+
+                  <ProgressRing
+                    value={done}
+                    max={total || PROGRESS_FLOOR}
+                    size={ringSize}
+                    text={`${done}/${total}`}
+                    textSize="var(--font-size-2xs)"
+                  />
+                </Stack>
+              </ClickableCard>
             );
           })}
-        </List>
+        </Grid>
       </Section>
     </>
   );

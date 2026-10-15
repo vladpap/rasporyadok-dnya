@@ -351,6 +351,17 @@ if (!weekMarkup.includes(`сделано ${WEEK_DONE} из ${WEEK_TOTAL}`)) {
 if (!weekMarkup.includes('astryx-divider')) {
   weekProblems.push('Итог недели не отделён от списка дней деливером');
 }
+// The week is seven square cards, one per day, each carrying its own ring. A
+// day with no progress draws the track only, so the ring is counted by its
+// marker rather than by the filled arc.
+const weekCards = weekMarkup.split('astryx-clickable-card').length - 1;
+const weekRings = weekMarkup.split('data-progress-ring').length - 1;
+if (weekCards !== 7) {
+  weekProblems.push(`В неделе ${weekCards} карточек, ожидалось 7`);
+}
+if (weekRings !== 7) {
+  weekProblems.push(`В неделе ${weekRings} колец прогресса, ожидалось 7`);
+}
 
 if (weekProblems.length > 0) {
   fail(weekProblems);

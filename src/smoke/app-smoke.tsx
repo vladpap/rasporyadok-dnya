@@ -530,7 +530,7 @@ if (!lateHost.innerHTML.includes('в течение часа после его �
 }
 // The morning segment was marked and its window has since closed, so that mark is
 // final and has earned one star. A mark still inside its window earns nothing.
-const lateStars = lateHost.querySelectorAll('[data-award-star]').length;
+const lateStars = lateHost.querySelectorAll('[data-award]').length;
 if (lateStars !== 1) {
   lockProblems.push(`В 13:30 звёзд ${lateStars}, ожидалась 1 за закрытую отметку`);
 }

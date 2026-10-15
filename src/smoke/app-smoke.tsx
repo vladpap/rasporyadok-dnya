@@ -528,13 +528,22 @@ if (!lateHost.querySelector('[aria-label="отмечено"]')) {
 if (!lateHost.innerHTML.includes('в течение часа после его окончания')) {
   lockProblems.push('На странице нет пояснения про окно отметки');
 }
+// The morning segment was marked and its window has since closed, so that mark is
+// final and has earned one star. A mark still inside its window earns nothing.
+const lateStars = lateHost.querySelectorAll('[data-award-star]').length;
+if (lateStars !== 1) {
+  lockProblems.push(`В 13:30 звёзд ${lateStars}, ожидалась 1 за закрытую отметку`);
+}
+if (!lateHost.innerHTML.includes('Награда:')) {
+  lockProblems.push('В шапке дня нет панели награды');
+}
 
 if (lockProblems.length > 0) {
   fail(lockProblems);
 }
 
 console.log(
-  'Окно отметки: в 13:30 из 7 отрезков кликабелен только текущий, отметка сохранилась, будущее и прошедшее не кликабельны',
+  `Окно отметки: в 13:30 из 7 отрезков кликабелен только текущий, закрытая отметка дала ${lateStars} звезду`,
 );
 resetSimulatedNow();
 

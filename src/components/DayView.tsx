@@ -18,7 +18,9 @@ import {
   type ScheduleEntry,
 } from '../schedule';
 import type {MarkStore} from '../marks';
+import {countDayAward} from '../rewards';
 import {useDayMarks} from '../useMarks';
+import {AwardPanel} from './AwardPanel';
 import {EntryCard} from './EntryCard';
 
 type DayViewProps = {
@@ -49,6 +51,7 @@ export function DayView({day, date, now, store}: DayViewProps) {
   const {doneIds, toggle} = useDayMarks(dateKey(date), store);
   const {done, total} = countProgress(day.entries, doneIds);
   const isDayFinished = total > 0 && done === total;
+  const award = countDayAward(day.entries, doneIds, date, now, day.key);
   const columns = distributeIntoColumns(day.entries, useColumnCount());
 
   // Times only mean "passed" or "running" on the day that is actually today.
@@ -73,12 +76,19 @@ export function DayView({day, date, now, store}: DayViewProps) {
     <>
       <Section variant="section" padding={4}>
         <Stack direction="vertical" gap={3}>
-          <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
-            <Heading level={2}>{formatDayTitle(date)}</Heading>
-            <Badge
-              label={isDayFinished ? 'день закрыт' : `сделано ${done} из ${total}`}
-              variant={isDayFinished ? 'success' : 'neutral'}
-            />
+          {/* The award stands on the right of the header, level with the day and
+              its count, so what the day has earned is read together with how much
+              of it is done. */}
+          <Stack direction="horizontal" gap={4} vAlign="center" justify="between" wrap="wrap">
+            <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
+              <Heading level={2}>{formatDayTitle(date)}</Heading>
+              <Badge
+                label={isDayFinished ? 'день закрыт' : `сделано ${done} из ${total}`}
+                variant={isDayFinished ? 'success' : 'neutral'}
+              />
+            </Stack>
+
+            <AwardPanel award={award} dayKey={day.key} />
           </Stack>
           <ProgressBar
             label="Прогресс дня"

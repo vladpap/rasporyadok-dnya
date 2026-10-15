@@ -54,7 +54,7 @@ type SchedulePageProps = {
 export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
   const markStore = useMemo(() => createMarkStore(), []);
   const {week, isLoading, error, reload} = useSchedule();
-  const {email, signIn, signOut} = useAuth();
+  const {email, canEdit, signIn, signInWithGoogle, signOut} = useAuth();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [view, setView] = useState<View>('day');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
@@ -85,15 +85,21 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
                   />
                 )}
 
-                {/* Editing is for the editor alone, so the entry point is one
-                    quiet button: it names who is signed in and offers the way in
-                    or out. The child following the schedule never needs it. */}
-                {email ? (
+                {/* The editor controls belong to the editor alone. A signed in
+                    visitor who is not on the editors list is told so rather than
+                    shown a button the database would refuse. */}
+                {canEdit ? (
                   <Button
                     label={view === 'edit' ? 'К расписанию' : 'Правка расписания'}
                     variant="secondary"
                     onClick={() => setView(view === 'edit' ? 'day' : 'edit')}
                   />
+                ) : null}
+
+                {email && !canEdit ? (
+                  <Text type="supporting" color="secondary">
+                    Правка недоступна для этого аккаунта
+                  </Text>
                 ) : null}
 
                 {email ? (
@@ -150,6 +156,7 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
         isOpen={isSignInOpen}
         onOpenChange={setIsSignInOpen}
         onSignIn={signIn}
+        onSignInWithGoogle={signInWithGoogle}
       />
     </>
   );

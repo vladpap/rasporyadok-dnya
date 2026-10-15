@@ -6,7 +6,7 @@ import {Card} from '@astryxdesign/core/Card';
 import {Divider} from '@astryxdesign/core/Divider';
 import {Icon} from '@astryxdesign/core/Icon';
 import {IconButton} from '@astryxdesign/core/IconButton';
-import {Layout, LayoutContent, Stack} from '@astryxdesign/core/Layout';
+import {Stack} from '@astryxdesign/core/Layout';
 import {SegmentedControl, SegmentedControlItem} from '@astryxdesign/core/SegmentedControl';
 import {Section} from '@astryxdesign/core/Section';
 import {Selector, SelectorOption} from '@astryxdesign/core/Selector';
@@ -229,7 +229,7 @@ export function EditPage({week, onSaved, onClose}: EditPageProps) {
   const dayLabel = week.find((weekDay) => weekDay.key === day)?.fullLabel ?? day;
 
   return (
-    <Layout height="fill">
+    <>
       <Section variant="section" padding={4}>
         <Stack direction="vertical" gap={4}>
           <Stack direction="horizontal" gap={3} vAlign="center" justify="between" wrap="wrap">
@@ -270,8 +270,7 @@ export function EditPage({week, onSaved, onClose}: EditPageProps) {
 
       <Divider variant="strong" isFullBleed />
 
-      <LayoutContent padding={0} role="main">
-        <Section variant="transparent" padding={4}>
+      <Section variant="transparent" padding={4}>
           <Stack direction="vertical" gap={4}>
             {drafts.map((draft, index) => {
               const SegmentIcon = resolveIcon(draft.icon);
@@ -383,7 +382,6 @@ export function EditPage({week, onSaved, onClose}: EditPageProps) {
             ) : null}
           </Stack>
         </Section>
-      </LayoutContent>
-    </Layout>
+    </>
   );
 }

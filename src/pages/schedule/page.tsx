@@ -3,7 +3,7 @@ import {useMemo, useState} from 'react';
 import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
 import {Icon} from '@astryxdesign/core/Icon';
-import {Layout, LayoutContent, LayoutHeader, Stack} from '@astryxdesign/core/Layout';
+import {Stack} from '@astryxdesign/core/Layout';
 import {SegmentedControl, SegmentedControlItem} from '@astryxdesign/core/SegmentedControl';
 import {Section} from '@astryxdesign/core/Section';
 import {Heading, Text} from '@astryxdesign/core/Text';
@@ -59,10 +59,13 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
   const day = findDay(week, dayKeyForDate(selectedDate));
 
   // The sign in dialog lives with the header rather than with the views, so it
-  // stays reachable while the schedule is still loading or has failed.
+  // stays reachable while the schedule is still loading or has failed. The
+  // header is a section rather than a LayoutHeader, because AppShell already
+  // owns the page frame and the scroll region: a nested Layout here would add a
+  // second scroll container and a second main landmark.
   const header = (
     <>
-      <LayoutHeader padding={4}>
+      <Section variant="section" padding={4}>
         <Card variant="purple" elevation="low" padding={5}>
           <Stack direction="vertical" gap={4}>
             <Stack direction="horizontal" gap={4} vAlign="center" justify="between" wrap="wrap">
@@ -136,7 +139,7 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
             </SegmentedControl>
           </Stack>
         </Card>
-      </LayoutHeader>
+      </Section>
 
       <SignInDialog
         isOpen={isSignInOpen}
@@ -151,76 +154,66 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
   // a way to try again.
   if (error) {
     return (
-      <Layout height="fill">
+      <>
         {header}
-        <LayoutContent padding={0} role="main">
-          <Section variant="section" padding={4}>
-            <Stack direction="vertical" gap={3}>
-              <Heading level={2}>Не удалось показать расписание</Heading>
-              <Text type="body" color="secondary">
-                {error}
-              </Text>
-              <Button label="Попробовать снова" onClick={reload} />
-            </Stack>
-          </Section>
-        </LayoutContent>
-      </Layout>
+        <Section variant="section" padding={4}>
+          <Stack direction="vertical" gap={3}>
+            <Heading level={2}>Не удалось показать расписание</Heading>
+            <Text type="body" color="secondary">
+              {error}
+            </Text>
+            <Button label="Попробовать снова" onClick={reload} />
+          </Stack>
+        </Section>
+      </>
     );
   }
 
   if (isLoading || !week || !day) {
     return (
-      <Layout height="fill">
+      <>
         {header}
-        <LayoutContent padding={0} role="main">
-          <Section variant="section" padding={4}>
-            <Text type="body" color="secondary">
-              Загружаем расписание…
-            </Text>
-          </Section>
-        </LayoutContent>
-      </Layout>
+        <Section variant="section" padding={4}>
+          <Text type="body" color="secondary">
+            Загружаем расписание…
+          </Text>
+        </Section>
+      </>
     );
   }
 
   return (
-    <Layout height="fill">
+    <>
       {header}
 
-      <LayoutContent padding={0} role="main">
-        {view === 'edit' ? (
-          <EditPage
-            week={week}
-            onSaved={reload}
-            onClose={() => setView('day')}
-          />
-        ) : view === 'day' ? (
-          <DayView day={day} date={selectedDate} now={now} store={markStore} />
-        ) : view === 'week' ? (
-          <WeekView
-            weekStart={startOfWeek(selectedDate)}
-            week={week}
-            today={now}
-            store={markStore}
-            onOpenDay={(date) => {
-              setSelectedDate(date);
-              setView('day');
-            }}
-          />
-        ) : (
-          <MonthView
-            monthAnchor={selectedDate}
-            week={week}
-            today={now}
-            store={markStore}
-            onNavigateMonth={setSelectedDate}
-            onOpenDay={(date) => {
-              setSelectedDate(date);
-              setView('day');
-            }}
-          />
-        )}
-      </LayoutContent>
-    </Layout>
+      {view === 'edit' ? (
+        <EditPage week={week} onSaved={reload} onClose={() => setView('day')} />
+      ) : view === 'day' ? (
+        <DayView day={day} date={selectedDate} now={now} store={markStore} />
+      ) : view === 'week' ? (
+        <WeekView
+          weekStart={startOfWeek(selectedDate)}
+          week={week}
+          today={now}
+          store={markStore}
+          onOpenDay={(date) => {
+            setSelectedDate(date);
+            setView('day');
+          }}
+        />
+      ) : (
+        <MonthView
+          monthAnchor={selectedDate}
+          week={week}
+          today={now}
+          store={markStore}
+          onNavigateMonth={setSelectedDate}
+          onOpenDay={(date) => {
+            setSelectedDate(date);
+            setView('day');
+          }}
+        />
+      )}
+    </>
   );
 }

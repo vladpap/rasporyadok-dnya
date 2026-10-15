@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react';
+import {Suspense, lazy, useMemo, useState} from 'react';
 
 import {Button} from '@astryxdesign/core/Button';
 import {Card} from '@astryxdesign/core/Card';
@@ -19,7 +19,12 @@ import type {ThemeMode} from '../../themeMode';
 import {useAuth} from '../../useAuth';
 import {useCurrentTime} from '../../useCurrentTime';
 import {findDay, useSchedule} from '../../useSchedule';
-import {EditPage} from './EditPage';
+
+// The editor is an editor's tool: a child following the schedule never opens it,
+// so its form controls load on demand instead of shipping in the first bundle.
+const EditPage = lazy(() =>
+  import('./EditPage').then((module) => ({default: module.EditPage})),
+);
 
 /** The views the page switches between. `edit` is only offered when signed in. */
 type View = 'day' | 'week' | 'month' | 'edit';
@@ -187,7 +192,17 @@ export default function SchedulePage({mode, onModeChange}: SchedulePageProps) {
       {header}
 
       {view === 'edit' ? (
-        <EditPage week={week} onSaved={reload} onClose={() => setView('day')} />
+        <Suspense
+          fallback={
+            <Section variant="section" padding={4}>
+              <Text type="body" color="secondary">
+                Открываем редактор…
+              </Text>
+            </Section>
+          }
+        >
+          <EditPage week={week} onSaved={reload} onClose={() => setView('day')} />
+        </Suspense>
       ) : view === 'day' ? (
         <DayView day={day} date={selectedDate} now={now} store={markStore} />
       ) : view === 'week' ? (

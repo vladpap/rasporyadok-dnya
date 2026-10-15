@@ -38,6 +38,39 @@ export function useNarrowViewport(): boolean {
   return useMediaQuery(NARROW_QUERY);
 }
 
+/** How the seven days of a week are arranged at the current width. */
+export type WeekLayout = 'seven' | 'four-three' | 'two-two-two-one';
+
+/** Narrowest viewport that still fits all seven day cards in one row. */
+const WEEK_SEVEN_MIN_WIDTH = 1200;
+
+/** Narrowest viewport that still fits four day cards in a row. */
+const WEEK_FOUR_MIN_WIDTH = 700;
+
+const WEEK_SEVEN_QUERY = `(min-width: ${WEEK_SEVEN_MIN_WIDTH}px)`;
+const WEEK_FOUR_QUERY = `(min-width: ${WEEK_FOUR_MIN_WIDTH}px)`;
+
+/**
+ * How the week should be arranged at the current width.
+ *
+ * The week steps through three fixed arrangements rather than flowing, because a
+ * flowing grid leaves a ragged last row: four then three leaves a gap unless the
+ * three stretch, and a phone shows two per row with the last day filling the row
+ * on its own. Each step is a deliberate shape, so the week always reads as
+ * whole rows.
+ *
+ * @returns The arrangement to draw.
+ */
+export function useWeekLayout(): WeekLayout {
+  const fitsSeven = useMediaQuery(WEEK_SEVEN_QUERY);
+  const fitsFour = useMediaQuery(WEEK_FOUR_QUERY);
+
+  if (fitsSeven) {
+    return 'seven';
+  }
+  return fitsFour ? 'four-three' : 'two-two-two-one';
+}
+
 /**
  * How many columns the current viewport fits.
  *

@@ -351,9 +351,9 @@ if (!weekMarkup.includes(`сделано ${WEEK_DONE} из ${WEEK_TOTAL}`)) {
 if (!weekMarkup.includes('astryx-divider')) {
   weekProblems.push('Итог недели не отделён от списка дней деливером');
 }
-// The week is seven square cards, one per day, each carrying its own ring. A
-// day with no progress draws the track only, so the ring is counted by its
-// marker rather than by the filled arc.
+// The week is seven cards, one per day, each carrying its own ring. A day with
+// no progress draws the track only, so the ring is counted by its marker rather
+// than by the filled arc.
 const weekCards = weekMarkup.split('astryx-clickable-card').length - 1;
 const weekRings = weekMarkup.split('data-progress-ring').length - 1;
 if (weekCards !== 7) {
@@ -368,6 +368,42 @@ if (weekProblems.length > 0) {
 }
 
 console.log(`Неделя: итог ${WEEK_DONE} из ${WEEK_TOTAL} показан в шапке`);
+
+// The week steps through three fixed shapes rather than flowing, so a row is
+// never left ragged. Each shape is checked at a width that selects it.
+const WEEK_LAYOUT_CASES = [
+  {width: 1500, rowSizes: [7], name: 'семь в ряд'},
+  {width: 1000, rowSizes: [4, 3], name: 'четыре и три'},
+  {width: 600, rowSizes: [2, 2, 2, 1], name: 'два, два, два и один'},
+];
+
+for (const {width, rowSizes, name} of WEEK_LAYOUT_CASES) {
+  const layoutHost = await mountApp(width);
+  const layoutWeekRadio = layoutHost.querySelector<HTMLElement>(
+    '[role="radio"][data-value="week"]',
+  );
+  if (!layoutWeekRadio) {
+    fail([`Не найден переключатель недели при ширине ${width}`]);
+  }
+  layoutWeekRadio.click();
+  await settle();
+
+  // Each row is one Grid, so the grids count and order is what the shape is.
+  const rows = [...layoutHost.querySelectorAll('.astryx-grid')].map(
+    (grid) => grid.querySelectorAll('.astryx-clickable-card').length,
+  );
+  const cards = layoutHost.innerHTML.split('astryx-clickable-card').length - 1;
+
+  if (cards !== 7) {
+    fail([`Раскладка «${name}»: карточек ${cards}, ожидалось 7`]);
+  }
+  if (rows.join(',') !== rowSizes.join(',')) {
+    fail([
+      `Раскладка «${name}» при ширине ${width}: ряды ${rows.join(',')}, ожидалось ${rowSizes.join(',')}`,
+    ]);
+  }
+  console.log(`Неделя при ширине ${width}: раскладка «${name}»`);
+}
 
 // The month view draws every day of October 2026 as a progress ring. One segment
 // was marked earlier, so exactly one ring must carry a filled arc.

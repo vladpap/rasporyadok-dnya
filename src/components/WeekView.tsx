@@ -31,9 +31,10 @@ const PROGRESS_FLOOR = 1;
 /**
  * The whole week as a list of days.
  *
- * Every day row shows its date, a progress bar over the segments that carry a
- * checkbox and a marker for today. Opening a row switches to the day view for
- * that date, where the marks themselves are set.
+ * The header sums the week: a badge with how much is done and a progress bar
+ * over every countable segment of the week. Below it every day row shows its
+ * date, its own progress bar and a marker for today. Opening a row switches to
+ * the day view for that date, where the marks themselves are set.
  *
  * @param props Week to show, the clock, storage and the day opener.
  * @returns The week view.
@@ -43,14 +44,45 @@ export function WeekView({weekStart, today, store, onOpenDay}: WeekViewProps) {
   const marksByDay = useRangeMarks(dayKeys, store);
   const weekEnd = addDays(weekStart, DAY_KEYS.length - 1);
 
+  // Sum the marked and countable segments across every day of the week, so the
+  // header can show how much of the whole week is done beside the per-day bars.
+  const weekProgress = DAY_KEYS.reduce(
+    (totals, dayKey, index) => {
+      const {done, total} = countProgress(
+        getScheduleDay(dayKey).entries,
+        marksByDay.get(dateKey(addDays(weekStart, index))) ?? new Set<string>(),
+      );
+      return {done: totals.done + done, total: totals.total + total};
+    },
+    {done: 0, total: 0},
+  );
+  const isWeekFinished = weekProgress.total > 0 && weekProgress.done === weekProgress.total;
+
   return (
     <>
       <Section variant="section" padding={4}>
-        <Stack direction="vertical" gap={2}>
-          <Heading level={2}>Неделя</Heading>
+        <Stack direction="vertical" gap={3}>
+          <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
+            <Heading level={2}>Неделя</Heading>
+            <Badge
+              label={
+                isWeekFinished
+                  ? 'неделя закрыта'
+                  : `сделано ${weekProgress.done} из ${weekProgress.total}`
+              }
+              variant={isWeekFinished ? 'success' : 'neutral'}
+            />
+          </Stack>
           <Text type="body" color="secondary">
             {`${formatDayTitle(weekStart)} — ${formatDayTitle(weekEnd)}`}
           </Text>
+          <ProgressBar
+            label="Прогресс недели"
+            value={weekProgress.done}
+            max={weekProgress.total || PROGRESS_FLOOR}
+            hasValueLabel
+            formatValueLabel={(value, maximum) => `${value} из ${maximum}`}
+          />
         </Stack>
       </Section>
 

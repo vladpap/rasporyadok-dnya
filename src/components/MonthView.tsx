@@ -1,7 +1,9 @@
+import {Badge} from '@astryxdesign/core/Badge';
 import {ClickableCard} from '@astryxdesign/core/ClickableCard';
 import {Grid} from '@astryxdesign/core/Grid';
 import {Icon} from '@astryxdesign/core/Icon';
 import {IconButton} from '@astryxdesign/core/IconButton';
+import {ProgressBar} from '@astryxdesign/core/ProgressBar';
 import {Section} from '@astryxdesign/core/Section';
 import {Stack} from '@astryxdesign/core/Stack';
 import {Heading, Text} from '@astryxdesign/core/Text';
@@ -44,13 +46,18 @@ const NO_MARKS: ReadonlySet<string> = new Set<string>();
 /** Minimum ring maximum, so a day without checkboxes still draws a track. */
 const RING_FLOOR = 1;
 
+/** Minimum progress maximum, so an empty month still renders a valid bar. */
+const PROGRESS_FLOOR = 1;
+
 /**
  * One month as a calendar grid, where every day is a ring of its own progress.
  *
- * A ring answers "how much of that day is done" without opening the day, which
- * a month of numbers cannot, and the number stays in the middle so the date is
- * still the first thing read. Days outside the month are shown faded to keep the
- * weeks whole; today is accent coloured.
+ * The header sums the month: a badge and a progress bar over every countable
+ * segment of the month, alongside the month title and its previous/next
+ * buttons. A ring answers "how much of that day is done" without opening the
+ * day, which a month of numbers cannot, and the number stays in the middle so
+ * the date is still the first thing read. Days outside the month are shown
+ * faded to keep the weeks whole; today is accent coloured.
  *
  * @param props Month to show, the clock, storage and the navigation handlers.
  * @returns The month view.
@@ -77,16 +84,35 @@ export function MonthView({
     },
     {done: 0, total: 0},
   );
+  const isMonthFinished =
+    monthProgress.total > 0 && monthProgress.done === monthProgress.total;
 
   return (
     <>
       <Section variant="section" padding={4}>
         <Stack direction="horizontal" gap={3} vAlign="center" justify="between" wrap="wrap">
-          <Stack direction="vertical" gap={1}>
-            <Heading level={2}>{formatMonthTitle(monthAnchor)}</Heading>
+          <Stack direction="vertical" gap={3}>
+            <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
+              <Heading level={2}>{formatMonthTitle(monthAnchor)}</Heading>
+              <Badge
+                label={
+                  isMonthFinished
+                    ? 'месяц закрыт'
+                    : `сделано ${monthProgress.done} из ${monthProgress.total}`
+                }
+                variant={isMonthFinished ? 'success' : 'neutral'}
+              />
+            </Stack>
             <Text type="supporting" color="secondary">
               {`За месяц сделано ${monthProgress.done} из ${monthProgress.total}`}
             </Text>
+            <ProgressBar
+              label="Прогресс месяца"
+              value={monthProgress.done}
+              max={monthProgress.total || PROGRESS_FLOOR}
+              hasValueLabel
+              formatValueLabel={(value, maximum) => `${value} из ${maximum}`}
+            />
           </Stack>
 
           <Stack direction="horizontal" gap={2} vAlign="center">

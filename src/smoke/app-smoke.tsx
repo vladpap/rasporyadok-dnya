@@ -297,6 +297,38 @@ for (const {width, expectedColumns} of WIDTH_CASES) {
   console.log(`Ширина ${width}: колонок ${columns.length}, все отрезки на месте`);
 }
 
+// The week view sums the whole week in its header. The marked day is a weekday
+// inside October 2026, so the week and the month both run over five tracked
+// weekdays plus Saturday and Sunday: 5 * 7 + 3 + 3 = 41 countable segments.
+const weekHost = await mountApp(MAIN_WIDTH);
+const weekRadio = weekHost.querySelector<HTMLElement>('[role="radio"][data-value="week"]');
+if (!weekRadio) {
+  fail(['Не найден переключатель недели']);
+}
+
+weekRadio.click();
+await settle();
+
+const weekMarkup = weekHost.innerHTML;
+const WEEK_TOTAL = 41;
+const WEEK_DONE = 1;
+const weekProblems: string[] = [];
+
+if (!weekMarkup.includes('Прогресс недели')) {
+  weekProblems.push('Нет итогового прогресса недели');
+}
+if (!weekMarkup.includes(`сделано ${WEEK_DONE} из ${WEEK_TOTAL}`)) {
+  weekProblems.push(
+    `Итог недели не ${WEEK_DONE} из ${WEEK_TOTAL}, как ожидалось после одной отметки`,
+  );
+}
+
+if (weekProblems.length > 0) {
+  fail(weekProblems);
+}
+
+console.log(`Неделя: итог ${WEEK_DONE} из ${WEEK_TOTAL} показан в шапке`);
+
 // The month view draws every day of October 2026 as a progress ring. One segment
 // was marked earlier, so exactly one ring must carry a filled arc.
 const monthHost = await mountApp(MAIN_WIDTH);
@@ -321,6 +353,9 @@ if (!monthMarkup.includes('октябрь 2026')) {
 }
 if (!monthMarkup.includes('За месяц сделано')) {
   monthProblems.push('Нет итога по месяцу');
+}
+if (!monthMarkup.includes('Прогресс месяца')) {
+  monthProblems.push('Нет итогового прогресса месяца');
 }
 if (!monthMarkup.includes('Пн') || !monthMarkup.includes('Вс')) {
   monthProblems.push('Нет заголовков дней недели');

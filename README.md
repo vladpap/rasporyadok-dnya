@@ -73,8 +73,8 @@ Activity kinds:
 | `src/App.tsx` | Theme provider and application shell. |
 | `src/pages/schedule/page.tsx` | The page: accent header with the view switch and an icon-only light/dark switch on the right, selected date, clock, and the day, week and month views. |
 | `src/components/DayView.tsx` | One day: header with the date and progress, then the segment cards in as many columns as the width allows. |
-| `src/components/WeekView.tsx` | The week: one row per day with its progress, opening a day. |
-| `src/components/MonthView.tsx` | The month: one progress ring per day, opening a day; prev/next moves between months. |
+| `src/components/WeekView.tsx` | The week: a header with the summed week progress, then one row per day with its own progress, opening a day. |
+| `src/components/MonthView.tsx` | The month: a header with the summed month progress and prev/next buttons, then one progress ring per day, opening a day. |
 | `src/components/ProgressRing.tsx` | The small SVG ring a month day is drawn with, one ring per shape. |
 | `src/components/EntryCard.tsx` | One segment as a card, clickable when it carries a mark. |
 | `src/columns.ts` | How many columns the width fits, and how segments are spread across them. |
@@ -134,9 +134,11 @@ A whole week always fits the grid, so the month starts on the Monday of or befor
 the first day and ends on the Sunday of or after the last day — that is why a month
 cell count runs between 28 and 42. Days outside the month are left transparent,
 today is the accent variant, and past days keep the marks they have. The grid
-header shows the nominative month (`октябрь 2026`) and the total marked in the
-month, and chevron buttons move to the previous and next month. Clicking any day
-opens that day's view.
+header shows the nominative month (`октябрь 2026`), a badge and progress bar over
+every countable segment of the month, and the total marked in the month; chevron
+buttons move to the previous and next month. Clicking any day opens that day's
+view. The week view has the same summed progress in its own header, so both views
+answer "how much of this whole period is done" at a glance.
 
 ### Where marks are stored
 

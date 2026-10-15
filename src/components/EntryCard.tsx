@@ -34,6 +34,18 @@ type EntryCardProps = {
 const CARD_HEIGHT = 148;
 
 /**
+ * Non-breaking spaces around the running badge's word.
+ *
+ * A theme cannot size the badge: its compiled classes raise their specificity with
+ * `:not(#\#)` chains and set both padding and a minimum width, which beats any
+ * rule a theme can write. Leading and trailing spaces in the label are what is
+ * left, and they have to be non-breaking: an ordinary space at the edge of a
+ * label is collapsed away by the renderer and changes nothing. Three to a side
+ * make the pill about twice as wide as the word alone.
+ */
+const PADDING = '\u00A0\u00A0\u00A0';
+
+/**
  * One segment of the day as a card.
  *
  * Segments that carry a mark are clickable while their marking window is open:
@@ -79,7 +91,7 @@ export function EntryCard({
             <Text type="label" color="secondary">
               {formatTimeRange(entry)}
             </Text>
-            {isRunningNow && <Badge label="сейчас" variant="accent" />}
+            {isRunningNow && <Badge label={`${PADDING}сейчас${PADDING}`} variant="accent" />}
           </Stack>
           <Heading level={4}>{entry.title}</Heading>
           {entry.note ? (

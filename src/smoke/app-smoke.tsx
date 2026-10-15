@@ -573,9 +573,17 @@ if (!lateHost.innerHTML.includes('в течение часа после его �
 }
 // The morning segment was marked and its window has since closed, so that mark is
 // final and has earned one star. A mark still inside its window earns nothing.
-const lateStars = lateHost.querySelectorAll('[data-award]').length;
+// The row shows every place the day holds, so the earned stars are counted by
+// leaving out the places that are still to earn.
+const lateStarPlaces = lateHost.querySelectorAll('[data-award]').length;
+const lateStars = lateHost.querySelectorAll('[data-award]:not([data-pending])').length;
 if (lateStars !== 1) {
   lockProblems.push(`В 13:30 звёзд ${lateStars}, ожидалась 1 за закрытую отметку`);
+}
+if (lateStarPlaces !== EXPECTED_TRACKED_COUNT) {
+  lockProblems.push(
+    `В 13:30 мест под звёзды ${lateStarPlaces}, ожидалось ${EXPECTED_TRACKED_COUNT}`,
+  );
 }
 if (!lateHost.innerHTML.includes('Награда:')) {
   lockProblems.push('В шапке дня нет панели награды');
@@ -586,7 +594,7 @@ if (lockProblems.length > 0) {
 }
 
 console.log(
-  `Окно отметки: в 13:30 из 7 отрезков кликабелен только текущий, закрытая отметка дала ${lateStars} звезду`,
+  `Окно отметки: в 13:30 из 7 отрезков кликабелен только текущий, закрытая отметка дала ${lateStars} звезду из ${lateStarPlaces} мест`,
 );
 resetSimulatedNow();
 

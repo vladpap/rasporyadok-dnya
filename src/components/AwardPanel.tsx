@@ -1,5 +1,4 @@
 import {Stack} from '@astryxdesign/core/Layout';
-import {Text} from '@astryxdesign/core/Text';
 import type {ReactNode} from 'react';
 
 import type {DayAward} from '../rewards';
@@ -37,10 +36,17 @@ const KIND_BY_VALUE: Record<number, AwardKind> = {
 /**
  * The stars a day has earned, shown on the right of the day header.
  *
- * While the day is unfinished the stars stand in a row, each drawn at the weight
- * it was worth, so the row grows as the day is closed out. The highest award
- * replaces that row with the single wreath, because at that point the day has
- * nothing left to earn and a row of small stars would say less.
+ * The row always holds every place the day can earn, so the header shows how many
+ * are still to come instead of growing a star at a time and shifting under the
+ * eye. A place that is still to earn is drawn in the same shape, faded, and the
+ * stars fill the row from the left as the day is closed out.
+ *
+ * The highest award replaces that row with the single wreath, because at that
+ * point the day has nothing left to earn and a row of small stars would say less.
+ *
+ * The panel says nothing in words. A row of stars and a wreath are read on sight,
+ * and a caption beside them only repeats the picture; the name lives in the
+ * `aria-label` instead, where a screen reader needs it and the eye does not.
  *
  * @param props What the day earned and which day it is.
  * @returns The award panel.
@@ -52,22 +58,25 @@ export function AwardPanel({award, dayKey}: AwardPanelProps): ReactNode {
     ? 'высшая награда'
     : isWeekend
       ? 'высшая награда — за первое выполненное задание'
-      : `звёзды: ${award.total} из 15`;
+      : `звёзды: ${award.total} из 15, выполнено ${award.stars.length} из ${award.slots}`;
 
   return (
     <Stack direction="horizontal" gap={3} vAlign="center" aria-label={`Награда: ${hint}`}>
       {award.hasHighest ? (
-        <Stack direction="horizontal" gap={2} vAlign="center">
-          <AwardStar kind="highest" size={HIGHEST_STAR_SIZE} />
-          <Text type="supporting" color="secondary">
-            высшая награда
-          </Text>
-        </Stack>
+        <AwardStar kind="highest" size={HIGHEST_STAR_SIZE} />
       ) : (
         <Stack direction="horizontal" gap={1} vAlign="center">
-          {award.stars.map((star, index) => (
-            <AwardStar key={index} kind={KIND_BY_VALUE[star.value] ?? 'one'} size={STAR_SIZE} />
-          ))}
+          {Array.from({length: award.slots}, (_, index) => {
+            const earned = award.stars[index];
+            return (
+              <AwardStar
+                key={index}
+                kind={earned ? (KIND_BY_VALUE[earned.value] ?? 'one') : 'one'}
+                size={STAR_SIZE}
+                isPending={!earned}
+              />
+            );
+          })}
         </Stack>
       )}
     </Stack>

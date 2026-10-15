@@ -41,6 +41,11 @@ export type DayAward = {
   total: number;
   /** Whether the day reached its highest award. */
   hasHighest: boolean;
+  /**
+   * How many stars the day can hold, so the header can show the ones still to
+   * earn as empty places rather than leaving the row to grow as the day goes on.
+   */
+  slots: number;
 };
 
 /** Days that hold fewer countable segments than a weekday. */
@@ -84,14 +89,18 @@ export function countDayAward(
     hasClosed(entry, date, now, doneIds.has(entry.id)),
   ).length;
 
+  // A weekend day holds too few segments to fill a weekday row, so its row is as
+  // long as the day itself; a weekday always shows seven places.
+  const slots = WEEKEND_DAYS.has(dayKey) ? countable.length : STAR_VALUES.length;
+
   if (closedCount === 0) {
-    return {stars: [], total: 0, hasHighest: false};
+    return {stars: [], total: 0, hasHighest: false, slots};
   }
 
   // A weekend day hands over the highest award as soon as one countable segment
   // is finished, because it cannot hold enough to earn the weekday fifteen.
   if (WEEKEND_DAYS.has(dayKey) && closedCount >= WEEKEND_AWARD_THRESHOLD) {
-    return {stars: [{value: MAX_STARS, hasLaurel: true}], total: MAX_STARS, hasHighest: true};
+    return {stars: [{value: MAX_STARS, hasLaurel: true}], total: MAX_STARS, hasHighest: true, slots};
   }
 
   // A weekday earns a star per closed segment, and the last stars carry a bonus.
@@ -107,8 +116,8 @@ export function countDayAward(
   // Finishing every countable segment replaces the row with one great star.
   const hasHighest = countable.length > 0 && closedCount === countable.length;
   if (hasHighest) {
-    return {stars: [{value: MAX_STARS, hasLaurel: true}], total: MAX_STARS, hasHighest: true};
+    return {stars: [{value: MAX_STARS, hasLaurel: true}], total: MAX_STARS, hasHighest: true, slots};
   }
 
-  return {stars, total, hasHighest};
+  return {stars, total, hasHighest, slots};
 }

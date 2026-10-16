@@ -79,12 +79,12 @@ export function EntryCard({
 
   const content = (
     <Stack direction="horizontal" gap={3} vAlign="center">
-      {/* The segment icon carries the theme accent. The card surfaces in dark
-          mode are near black, where a tint of the accent cannot be told apart
-          from another theme, so the icon is the large coloured shape that makes
-          the chosen theme visible there. A finished segment keeps its accent
-          icon, which is why the colour does not depend on the card state. */}
-      <Icon icon={SegmentIcon} size="lg" color="accent" />
+      {/* The icon colour says whether the segment is one to be done: a countable
+          segment carries the theme accent, which is what singles it out from the
+          meals and the breaks around it, while the rest take the body text colour
+          and read as part of the day rather than as a task. The colour follows the
+          segment, not its state, so a finished segment keeps the accent too. */}
+      <Icon icon={SegmentIcon} size="lg" color={entry.tracked ? 'accent' : 'primary'} />
       <StackItem size="fill">
         <Stack direction="vertical" gap={1}>
           <Stack direction="horizontal" gap={2} vAlign="center" wrap="wrap">

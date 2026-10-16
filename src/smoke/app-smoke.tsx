@@ -53,7 +53,8 @@ const CLICKED_SEGMENT_ID = 'wed-0900-physics-chemistry';
 const EXPECTED_TEXTS = [
   'Распорядок дня',
   'Прогресс дня',
-  'среда, 14 октября',
+  // The day heading is the short form, so its width stays put as days are stepped.
+  'Ср, 14 окт',
   'Физика / химия',
   'сейчас',
   'Подъём, зарядка, гигиена',

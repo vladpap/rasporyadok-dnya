@@ -71,6 +71,30 @@ const MONTH_NAMES = [
 ];
 
 /**
+ * Short Russian week day names, indexed like `Date.getDay`.
+ *
+ * Two letters each, so the heading that steps through days keeps the same width
+ * whichever day it lands on.
+ */
+const WEEKDAY_SHORT = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+/** Short Russian month names, three letters each, indexed like `Date.getMonth`. */
+const MONTH_SHORT = [
+  'янв',
+  'фев',
+  'мар',
+  'апр',
+  'мая',
+  'июн',
+  'июл',
+  'авг',
+  'сен',
+  'окт',
+  'ноя',
+  'дек',
+];
+
+/**
  * Week day key of a date, with Monday as the first day.
  *
  * @param date Any date.
@@ -253,6 +277,21 @@ export function isMarkingOpen(date: Date, entry: ScheduleEntry, now: Date): bool
  */
 export function formatDayTitle(date: Date): string {
   return `${WEEKDAY_NAMES[date.getDay()]}, ${date.getDate()} ${MONTH_NAMES[date.getMonth()]}`;
+}
+
+/**
+ * Short Russian title of a day, for example `Вт, 14 окт`.
+ *
+ * Used where the day is stepped through, because the long title changes width
+ * from one day to the next and the controls beside it would shift with it. Two
+ * letters of the week day and three of the month keep the text within a letter or
+ * two of the same width always.
+ *
+ * @param date Any date.
+ * @returns Short title text.
+ */
+export function formatDayTitleShort(date: Date): string {
+  return `${WEEKDAY_SHORT[date.getDay()]}, ${date.getDate()} ${MONTH_SHORT[date.getMonth()]}`;
 }
 
 /**

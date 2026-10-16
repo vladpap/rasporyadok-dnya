@@ -7,7 +7,7 @@ import {Heading} from '@astryxdesign/core/Text';
 import {CalendarCheck, CalendarDays, ChevronLeft, ChevronRight} from 'lucide-react';
 import {useState} from 'react';
 
-import {addDays, dateKey, formatDayTitle, isSameDate} from '../schedule';
+import {addDays, dateKey, formatDayTitleShort, isSameDate} from '../schedule';
 
 type DayNavigatorProps = {
   /** The day being shown. */
@@ -58,7 +58,7 @@ export function DayNavigator({date, onSelectDate, now}: DayNavigatorProps) {
         onClick={() => onSelectDate(addDays(date, -DAY_STEP))}
       />
 
-      <Heading level={2}>{formatDayTitle(date)}</Heading>
+      <Heading level={2}>{formatDayTitleShort(date)}</Heading>
 
       <IconButton
         label={`Вперёд на ${DAY_STEP} дней`}

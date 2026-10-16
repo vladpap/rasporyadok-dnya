@@ -83,7 +83,7 @@ export function DayView({day, date, now, store, onSelectDate}: DayViewProps) {
               of it is done. */}
           <Stack direction="horizontal" gap={4} vAlign="center" justify="between" wrap="wrap">
             <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
-              <DayNavigator date={date} onSelectDate={onSelectDate} />
+              <DayNavigator date={date} onSelectDate={onSelectDate} now={now} />
               <Badge
                 label={isDayFinished ? 'день закрыт' : `сделано ${done} из ${total}`}
                 variant={isDayFinished ? 'success' : 'neutral'}

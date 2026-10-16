@@ -16,7 +16,7 @@ import {SignInDialog} from '../../components/SignInDialog';
 import {ThemePicker} from '../../components/ThemePicker';
 import {WeekView} from '../../components/WeekView';
 import {createMarkStore} from '../../marks';
-import {dayKeyForDate, isSameDate, startOfWeek} from '../../schedule';
+import {dayKeyForDate, startOfWeek} from '../../schedule';
 import type {ThemeKey} from '../../themes';
 import type {ThemeMode} from '../../themeMode';
 import {useAuth} from '../../useAuth';
@@ -72,7 +72,6 @@ export default function SchedulePage({
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const now = useCurrentTime();
 
-  const isShowingToday = isSameDate(selectedDate, now);
   const day = findDay(week, dayKeyForDate(selectedDate));
 
   // The sign in dialog lives with the header rather than with the views, so it
@@ -89,13 +88,9 @@ export default function SchedulePage({
               <Heading level={1}>Распорядок дня</Heading>
 
               <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
-                {!isShowingToday && (
-                  <Button
-                    label="К сегодняшнему дню"
-                    variant="secondary"
-                    onClick={() => setSelectedDate(new Date())}
-                  />
-                )}
+                {/* The way back to today sits with the day heading itself, where
+                    the date is changed, rather than up here with the appearance
+                    controls. */}
 
                 {/* The editor controls belong to the editor alone. A signed in
                     visitor who is not on the editors list is told so rather than

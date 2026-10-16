@@ -1,0 +1,68 @@
+# Build the app and publish it to GitHub Pages.
+#
+# Pages serves a project site from /<repository>/, so the bundle is built with
+# that base path (see vite.config.ts) and everything under dist/ is published.
+#
+# The schedule is read from Supabase at runtime, so nothing secret is needed to
+# build: the project URL and the public anon key are in the source on purpose, and
+# the database protects writes with row level security.
+
+name: Deploy to GitHub Pages
+
+on:
+  # Publish whenever main moves, which is what makes the site match the code.
+  push:
+    branches: [main]
+  # Allow a manual run from the Actions tab.
+  workflow_dispatch:
+
+# Only one deploy at a time, and let a running one finish rather than cancelling
+# it half published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      # The Astryx CLI needs Node 22.13 or newer, and the build runs it.
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # The data step validates data/schedule.csv and writes the JSON the smoke
+      # test reads, and the build itself type checks first.
+      - name: Run the data tests
+        run: npm test
+
+      - name: Build the site
+        run: npm run build
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

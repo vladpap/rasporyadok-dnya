@@ -213,6 +213,45 @@ if (problems.length > 0) {
   fail(problems);
 }
 
+// The day heading steps one day at a time, so the arrows have to move by a day
+// rather than jump, and they have to stop at the edge of the reach rather than
+// walking forever. On today both arrows are live, since today sits in the middle.
+const stepBack = host.querySelector<HTMLButtonElement>('button[aria-label="Предыдущий день"]');
+const stepForward = host.querySelector<HTMLButtonElement>('button[aria-label="Следующий день"]');
+const stepProblems: string[] = [];
+
+if (!stepBack || !stepForward) {
+  fail(['В шапке дня нет стрелок листания']);
+}
+if (stepBack?.disabled || stepForward?.disabled) {
+  stepProblems.push('На сегодняшнем дне стрелки должны быть доступны');
+}
+
+stepForward?.click();
+await settle();
+
+const afterOneStep = host.textContent ?? '';
+if (!afterOneStep.includes('Чт, 15 окт')) {
+  stepProblems.push('Шаг вперёд не перевёл на следующий день');
+}
+if (afterOneStep.includes('Ср, 14 окт')) {
+  stepProblems.push('После шага вперёд остался прежний день');
+}
+// One step must land on the next day, not ten days later.
+if (afterOneStep.includes('Сб, 24 окт')) {
+  stepProblems.push('Стрелка перескочила больше чем на один день');
+}
+
+if (stepProblems.length > 0) {
+  fail(stepProblems);
+}
+
+// Step back, so the checks that follow see the day they expect.
+stepBack?.click();
+await settle();
+
+console.log('Листание дня: шаг в один день, стрелки доступны');
+
 // The columns must read downwards: the first column takes the earliest segments
 // and the last one takes the latest, which a row-by-row grid would not do.
 const mainColumns = readColumns(host);

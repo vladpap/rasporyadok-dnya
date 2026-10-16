@@ -242,7 +242,13 @@ export default function SchedulePage({
           <EditPage week={week} onSaved={reload} onClose={() => setView('day')} />
         </Suspense>
       ) : view === 'day' ? (
-        <DayView day={day} date={selectedDate} now={now} store={markStore} />
+        <DayView
+            day={day}
+            date={selectedDate}
+            now={now}
+            store={markStore}
+            onSelectDate={setSelectedDate}
+          />
       ) : view === 'week' ? (
         <WeekView
           weekStart={startOfWeek(selectedDate)}

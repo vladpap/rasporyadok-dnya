@@ -35,7 +35,7 @@ import {resetSimulatedNow, setSimulatedNow, setSimulatedWidth} from './dom';
 (window as unknown as {__rasporyadokUseLocalMarks?: boolean}).__rasporyadokUseLocalMarks = true;
 
 /** How long to let React finish mounting, loading marks and re-rendering. */
-const SETTLE_MS = 100;
+const SETTLE_MS = 300;
 
 /** The frozen clock sits inside this weekday, so this is the shown day. */
 const SHOWN_DAY_KEY = 'wed';

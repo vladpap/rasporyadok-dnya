@@ -3,14 +3,13 @@ import {Grid} from '@astryxdesign/core/Grid';
 import {ProgressBar} from '@astryxdesign/core/ProgressBar';
 import {Section} from '@astryxdesign/core/Section';
 import {Stack} from '@astryxdesign/core/Stack';
-import {Heading, Text} from '@astryxdesign/core/Text';
+import {Text} from '@astryxdesign/core/Text';
 
 import {distributeIntoColumns, useColumnCount} from '../columns';
 import {
   countProgress,
   dateKey,
   entryPhase,
-  formatDayTitle,
   isMarkingOpen,
   isSameDate,
   minutesOfDate,
@@ -21,11 +20,14 @@ import type {MarkStore} from '../marks';
 import {countDayAward} from '../rewards';
 import {useDayMarks} from '../useMarks';
 import {AwardPanel} from './AwardPanel';
+import {DayNavigator} from './DayNavigator';
 import {EntryCard} from './EntryCard';
 
 type DayViewProps = {
   day: ScheduleDay;
   date: Date;
+  /** Show another day, from the arrows or the calendar in the heading. */
+  onSelectDate: (date: Date) => void;
   /** The current moment. */
   now: Date;
   store: MarkStore;
@@ -47,7 +49,7 @@ const PROGRESS_FLOOR = 1;
  * @param props Day to show, the clock, and the mark storage.
  * @returns The day view.
  */
-export function DayView({day, date, now, store}: DayViewProps) {
+export function DayView({day, date, now, store, onSelectDate}: DayViewProps) {
   const {doneIds, toggle} = useDayMarks(dateKey(date), store);
   const {done, total} = countProgress(day.entries, doneIds);
   const isDayFinished = total > 0 && done === total;
@@ -81,7 +83,7 @@ export function DayView({day, date, now, store}: DayViewProps) {
               of it is done. */}
           <Stack direction="horizontal" gap={4} vAlign="center" justify="between" wrap="wrap">
             <Stack direction="horizontal" gap={3} vAlign="center" wrap="wrap">
-              <Heading level={2}>{formatDayTitle(date)}</Heading>
+              <DayNavigator date={date} onSelectDate={onSelectDate} />
               <Badge
                 label={isDayFinished ? 'день закрыт' : `сделано ${done} из ${total}`}
                 variant={isDayFinished ? 'success' : 'neutral'}
